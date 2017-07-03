@@ -92,8 +92,17 @@ ENV/
 .ropeproject
 
 .idea/
+
 asset/
 sandbox/
 train/
 log/
 
+
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehtumbs.db
+Thumbs.db
