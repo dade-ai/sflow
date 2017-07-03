@@ -1,0 +1,12 @@
+# optional requirements
+
+numpy
+matplotlib
+skimage
+scandir
+h5py
+joblib
+cjson
+noise
+MySQL-python
+cv2
