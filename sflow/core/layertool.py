@@ -4,7 +4,7 @@ from __future__ import absolute_import
 import tensorflow as tf
 from six import wraps
 
-from sflow.core import (call_with_default_context)
+from .defaults import (call_with_default_context)
 from snipy.basic import (patch)
 
 

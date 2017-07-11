@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from contextlib import contextmanager
 import collections
 import tensorflow as tf
 
-from sflow.core import const
-from sflow.core.defaults import Dic
+from .iconst import const
+from .defaults import Dic
 from snipy.basic import (patchmethod, patchproperty, tuple_args)
 
 

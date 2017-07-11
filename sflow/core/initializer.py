@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import numpy as np
 import tensorflow as tf
 
-from sflow.core import const
-from sflow.core import default_deco
+from .icore import const
+from .defaults import default_deco
 
 
 def _conv_fans(kshape):
