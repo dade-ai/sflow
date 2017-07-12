@@ -218,3 +218,23 @@ def channel_to_layer(x, channel):
 
     return x
 
+
+@patchmethod(tf.Tensor, tf.Variable)
+@tf.op_scope
+def to_space(x):
+    """
+    call patch_to_space with imgsz auto cacluated
+    :param x:
+    :return:
+    """
+    import math
+    batch = x.dims[0]
+    w = 1
+    for h in range(int(math.sqrt(batch)), 1, -1):
+        if batch % h == 0:
+            w = batch // h
+            break
+
+    imgsz = (h * x.dims[1], w * x.dims[2])
+    return patch_to_space(x, imgsz)
+
