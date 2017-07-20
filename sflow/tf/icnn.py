@@ -274,6 +274,14 @@ def cnorm(x, labels, klass=None, stddev=0.01, beta=0.0, gamma=1.0, epsilon=1e-5)
 
     return inorm(x, beta=beta_l, gamma=gamma_l, epsilon=epsilon)
 
+
+@layer
+def pn(x, beta=0.0, gamma=1.0, epsilon=1e-5):
+    b = tf.get_weight(name='beta', shape=(), value=beta)
+    g = tf.get_weight(name='gamma', shape=(), value=gamma)
+
+    return inorm(x, beta=b, gamma=g, epsilon=epsilon)
+
 # endregion
 
 

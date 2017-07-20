@@ -183,7 +183,7 @@ def parse_flag(*args, **kwargs):
 # # replace tensorflow tf.flags.FLAGS
 # _flags.FLAGS = flag
 
-add_flag('assets_root', './assets', 'asset root folder')
+add_flag('assets_root', '~/assets', 'asset root folder')
 
 
 def assets_folder(subfolder=''):
@@ -192,7 +192,8 @@ def assets_folder(subfolder=''):
     if not flag.assets_root.startswith(('~', '/')):
         p = os.path.abspath(os.path.join(os.getcwd(), flag.assets_root))
     else:
-        p = os.path.abspath(flag.assets_root)
+        p = os.path.expanduser(flag.assets_root)
+        p = os.path.abspath(p)
     return os.path.join(p, subfolder)
 
 

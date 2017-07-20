@@ -4,6 +4,7 @@ data from https://s3.amazonaws.com/img-datasets/mnist.npz
 https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/keras/python/keras/datasets/mnist.py
 """
 import sflow.tf as tf
+import sflow.py as py
 import numpy as np
 
 
@@ -69,7 +70,6 @@ def _load_data(folder=None):
 
 
 if __name__ == '__main__':
-    import sflow.py as py
 
     data = dataset_train(16)
 
