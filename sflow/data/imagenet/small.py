@@ -4,7 +4,7 @@ import sflow.tf as tf
 
 
 def _asset_folder():
-    return '/data/imagenet/small/'
+    return tf.assets_folder('/imagenet/small/')
 
 
 def dataset_train32(batch, **kwargs):

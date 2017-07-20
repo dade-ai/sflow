@@ -11,8 +11,11 @@ from tensorflow.python.framework import errors
 from tensorflow.python.platform import tf_logging as logging
 # from tensorflow.python.training import queue_runner as qr
 # from tensorflow.python.training.queue_runner import QueueRunner
-# from tensorflow.contrib.learn.python.learn.dataframe.queues.feeding_queue_runner import FeedingQueueRunner
-from tensorflow.contrib.training import FeedingQueueRunner
+try:
+    from tensorflow.contrib.training import FeedingQueueRunner
+except ImportError:
+    from tensorflow.contrib.learn.python.learn.dataframe.queues.feeding_queue_runner import FeedingQueueRunner
+    pass
 
 
 class GenQueueRunner(FeedingQueueRunner):

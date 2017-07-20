@@ -8,7 +8,7 @@ import sflow.tf as tf
 
 
 def _asset_folder():
-    return '/data/face/celeba/'  #Img/img_align_celeba/'
+    return tf.assets_folder('/face/celeba/')  #Img/img_align_celeba/'
 
 
 def dataset(batch, size=None, crop=None, folder=None, capacity=512,

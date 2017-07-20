@@ -8,7 +8,7 @@ import numpy as np
 
 
 def _asset_folder():
-    return '/data/mnist/'
+    return tf.assets_folder('mnist/')
 
 
 def dataset_train(batch, folder=None):
@@ -55,6 +55,10 @@ def _load_data(folder=None):
     import os
     folder = folder or _asset_folder()
     f = os.path.join(folder, 'mnist.npz')
+
+    url = 'http://s3.amazonaws.com/img-datasets/mnist.npz'
+    py.download_if_not(url, f)
+
     with np.load(f) as f:
         x_train = f['x_train']
         y_train = f['y_train']
@@ -69,11 +73,8 @@ if __name__ == '__main__':
 
     data = dataset_train(16)
 
-    with tf.feeding() as (sess, coord):
-        while not coord.should_stop():
-            out = sess.run(data)
-            py.plt.imshow(out.image)
-            print(out.label)
-            if not py.plt.plot_pause():
-                break
-
+    for d in tf.feeds(data):
+        py.imshow(d.image)
+        print(d.label)
+        if not py.plot_pause():
+            break

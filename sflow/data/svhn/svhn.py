@@ -3,7 +3,7 @@ import sflow.tf as tf
 
 
 def _folder():
-    return '/data/svhn/'
+    return tf.assets_folder('/svhn/')
 
 
 def dataset_train(batch, shape=None, folder=None):

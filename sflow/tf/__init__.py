@@ -34,5 +34,6 @@ from .measure import *
 from .. import feed
 from .. import img
 from .. import io
+from .. import sample
 from . import cmap
 

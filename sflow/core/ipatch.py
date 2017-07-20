@@ -520,7 +520,7 @@ def top_k(x, k=1, sorted=True, axis=None, name=None):
     :param x:
     :param k:
     :param sorted:
-    :param axis: default -1
+    :param axis: default None
     :param name:
     :return:
     """

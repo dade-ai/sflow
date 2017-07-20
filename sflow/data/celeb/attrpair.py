@@ -7,7 +7,7 @@ import sflow.tf as tf
 
 
 def datasetfolder():
-    return '/data/face/celeba/'  #Img/img_align_celeba/'
+    return tf.assets_folder('/face/celeba/')  #Img/img_align_celeba/'
 
 
 def attributes_desc():

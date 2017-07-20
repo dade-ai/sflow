@@ -77,12 +77,10 @@ def _test_dataset():
     import sflow.py as py
 
     data = dataset_valB(16)
-    with tf.feeding() as (sess, coord):
-        while not coord.should_stop():
-            py.plt.imshow(data.eval())
-            if not py.plt.plot_pause():
-                break
-
+    for d in tf.feeds(data):
+        py.imshow([d.A, d.B])
+        if not py.plot_pause():
+            break
 
 if __name__ == '__main__':
     _test_dataset()

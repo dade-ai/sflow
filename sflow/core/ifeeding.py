@@ -38,3 +38,19 @@ def feeding(sess=None, coord=None):
         # noinspection PyUnboundLocalVariable
         coord.join(threads)
 
+
+def feeds(data):
+    """
+    feed the evaluated data
+
+    example::
+        for d in tf.feeds(data):
+            print(d)
+
+    :param tf.Tensor data:
+    :return:
+    """
+    with feeding() as (sess, coord):
+        while not coord.should_stop():
+            yield data.eval()
+

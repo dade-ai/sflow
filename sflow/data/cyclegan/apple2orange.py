@@ -14,8 +14,8 @@ def dataset_train(batch, **kwargs):
 
 
 def dataset_test(batch, **kwargs):
-    a = dataset_trainA(batch, **kwargs)
-    b = dataset_trainB(batch, **kwargs)
+    a = dataset_testA(batch, **kwargs)
+    b = dataset_testB(batch, **kwargs)
     return tf.dic(A=a, B=b, batch=batch)
 
 
@@ -39,11 +39,10 @@ def _test_dataset():
     import sflow.py as py
 
     data = dataset_trainA(16)
-    with tf.feeding() as (sess, coord):
-        while not coord.should_stop():
-            py.plt.imshow(data.eval())
-            if not py.plt.plot_pause():
-                break
+    for d in tf.feeds(data):
+        py.imshow(d)
+        if not py.plot_pause():
+            break
 
 
 if __name__ == '__main__':

@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-import sflow.tf as sf
-import tensorflow as tf
-
+import sflow.tf as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
 
@@ -21,7 +19,7 @@ def _data_to_tensor(data_list, batch_size, name=None):
 
 class Mnist(object):
 
-    _data_dir = '/data/mnist'
+    _data_dir = tf.assets_folder('mnist')
 
     def __init__(self, batch=128, reshape=False, one_hot=False):
 
@@ -36,7 +34,7 @@ class Mnist(object):
         _test = data_set.test
 
         # member initialize
-        self.train, self.valid, self.test = sf.dic(), sf.dic(), sf.dic()
+        self.train, self.valid, self.test = tf.dic(), tf.dic(), tf.dic()
 
         # convert to tensor queue
         self.train.image, self.train.label = \

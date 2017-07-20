@@ -4,7 +4,7 @@ import sflow.py as py
 
 
 def datasetfolder():
-    return '/data/face/fer2013'
+    return tf.assets_folder('/face/fer2013')
 
 
 def datasetfile():

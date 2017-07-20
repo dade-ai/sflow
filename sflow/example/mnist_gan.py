@@ -36,7 +36,7 @@ def discriminator(imgz):
 
 
 def model_mnist_gan():
-    from sflow.data.mnist import Mnist
+    from sflow.data._mnist_old import Mnist
 
     # MNIST input tensor ( with QueueRunner )
     data = Mnist(batch=32)

@@ -111,7 +111,7 @@ def model_vae(x, ndim=2):
 
 
 def train():
-    from sflow.data.mnist import Mnist
+    from sflow.data._mnist_old import Mnist
     data = Mnist(batch=16)
     x = data.train.image  # input image
     tf.summary_image(x, name='org')

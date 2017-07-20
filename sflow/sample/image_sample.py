@@ -26,7 +26,7 @@ import numpy as np
 
 
 def _common_convert_deco(fn):
-    import sflow.tf as tf
+    import sflow.core as tf
 
     @wraps(fn)
     def _raise_on_exec():

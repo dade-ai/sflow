@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 def datasetfolder():
-    return '/data/face/helen/SmithCVPR2013_dataset_resized/'
+    return tf.assets_folder('/face/helen/SmithCVPR2013_dataset_resized/')
 
 
 def _trainfile(folder=None):

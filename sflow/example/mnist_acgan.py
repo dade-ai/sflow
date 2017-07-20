@@ -36,7 +36,7 @@ def discriminator(xx, num_cont, batch):
 
 
 def model_acgan(batch, num_dim, num_cont):
-    from sflow.data.mnist import Mnist
+    from sflow.data._mnist_old import Mnist
 
     # MNIST input tensor ( with QueueRunner )
     data = Mnist(batch=batch)

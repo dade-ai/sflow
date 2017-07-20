@@ -21,34 +21,29 @@ def dataset_test(batch, **kwargs):
 
 
 def dataset_trainA(batch, shuffle=True, **kwargs):
-    return dataset_reader(batch, _folder(), 'trainA', shuffle=shuffle,
-                          **kwargs)
+    return dataset_reader(batch, _folder(), 'trainA', shuffle=shuffle, **kwargs)
 
 
 def dataset_trainB(batch, shuffle=True, **kwargs):
-    return dataset_reader(batch, _folder(), 'trainB', shuffle=shuffle,
-                          **kwargs)
+    return dataset_reader(batch, _folder(), 'trainB', shuffle=shuffle, **kwargs)
 
 
 def dataset_testA(batch, shuffle=False, **kwargs):
-    return dataset_reader(batch, _folder(), 'testA', shuffle=shuffle,
-                              **kwargs)
+    return dataset_reader(batch, _folder(), 'testA', shuffle=shuffle, **kwargs)
 
 
 def dataset_testB(batch, shuffle=False, **kwargs):
-    return dataset_reader(batch, _folder(), 'testB', shuffle=shuffle,
-                              **kwargs)
+    return dataset_reader(batch, _folder(), 'testB', shuffle=shuffle, **kwargs)
 
 
 def _test_dataset():
     import sflow.py as py
 
-    data = dataset_trainA(16)
-    with tf.feeding() as (sess, coord):
-        while not coord.should_stop():
-            py.plt.imshow(data.eval())
-            if not py.plt.plot_pause():
-                break
+    data = dataset_train(16)
+    for d in tf.feeds(data):
+        py.imshow([d.A, d.B])
+        if not py.plot_pause():
+            break
 
 
 if __name__ == '__main__':
