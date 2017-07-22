@@ -111,9 +111,9 @@ def model_vae(x, ndim=2):
 
 
 def train():
-    from sflow.data._mnist_old import Mnist
-    data = Mnist(batch=16)
-    x = data.train.image  # input image
+    from sflow.data.mnist import dataset_train
+    data = dataset_train(batch=16)
+    x = data.image  # input image
     tf.summary_image(x, name='org')
 
     zdim = 2

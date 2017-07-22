@@ -36,11 +36,13 @@ def discriminator(imgz):
 
 
 def model_mnist_gan():
-    from sflow.data._mnist_old import Mnist
+    from sflow.data.mnist import dataset_train
 
     # MNIST input tensor ( with QueueRunner )
-    data = Mnist(batch=32)
-    x = data.train.image  # input image
+    batch = 32
+    data = dataset_train(batch=batch)
+    data.batch = batch
+    x = data.image  # input image
     y = tf.ones(data.batch)
 
     ydisc = tf.concat(0, [y, y*0.])

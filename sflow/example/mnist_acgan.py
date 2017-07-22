@@ -36,19 +36,20 @@ def discriminator(xx, num_cont, batch):
 
 
 def model_acgan(batch, num_dim, num_cont):
-    from sflow.data._mnist_old import Mnist
+    from sflow.data.mnist import dataset_train
 
     # MNIST input tensor ( with QueueRunner )
-    data = Mnist(batch=batch)
-    x = data.train.image  # input image
-    y = tf.ones(data.batch)
-    y_disc = tf.concat(0, [y, tf.zeros(data.batch)])
+    data = dataset_train(batch=batch)
+
+    x = data.image  # input image
+    y = tf.ones(batch)
+    y_disc = tf.concat(0, [y, tf.zeros(batch)])
 
     z_cat = tf.multinomial(tf.ones((batch, 10)), 1).to_int32().squeeze()
     z = z_cat.one_hot(10).hcat(tf.random_uniform((batch, num_dim - 10)))
     z_cont = z[:, 10:10+num_cont]
 
-    label = tf.concat(0, [data.train.label, z_cat])
+    label = tf.concat(0, [data.label, z_cat])
 
     gen = generator(z)
     xx = tf.concat(0, [x, gen])

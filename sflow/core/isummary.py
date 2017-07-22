@@ -41,7 +41,7 @@ def summary_activations(tensors, names=None, collections=None, family=None):
 
 def summary_activation(tensor, name=None, collections=None, family=None):
     # defaults
-    name = 'activation/' + (name or tensor.name)
+    name = name or 'activation/' + tensor.name
     # summary statistics
     # tf.summary.scalar(name + '/norm', tf.global_norm([tensor]))
     tf.summary.scalar(name + '/ratio', tensor.greater(0.).to_float().mean(), collections=collections, family=family)

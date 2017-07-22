@@ -264,7 +264,7 @@ def cnorm(x, labels, klass=None, stddev=0.01, beta=0.0, gamma=1.0, epsilon=1e-5)
     shape[0] = klass
     shape[-1] = x.dims[-1]  # ones but last channel axis
 
-    # [klass, 1, 1, C] for [BHNC] data
+    # [klass, 1, 1, C] for [BHWC] data
     beta_v = tf.get_weight(name='beta', shape=shape, initializer=init_beta)
     gamma_v = tf.get_weight(name='gamma', shape=shape, initializer=init_gamma)
     # conditioned by label
@@ -275,12 +275,41 @@ def cnorm(x, labels, klass=None, stddev=0.01, beta=0.0, gamma=1.0, epsilon=1e-5)
     return inorm(x, beta=beta_l, gamma=gamma_l, epsilon=epsilon)
 
 
+# @layer
+# def pn(x, beta=0.0, gamma=1.0, epsilon=1e-5):
+#     b = tf.get_weight(name='beta', shape=(), value=beta)
+#     g = tf.get_weight(name='gamma', shape=(), value=gamma)
+#
+#     return inorm(x, beta=b, gamma=g, epsilon=epsilon)
+
 @layer
-def pn(x, beta=0.0, gamma=1.0, epsilon=1e-5):
-    b = tf.get_weight(name='beta', shape=(), value=beta)
-    g = tf.get_weight(name='gamma', shape=(), value=gamma)
+def pin(x, beta=0.0, gamma=1.0, epsilon=1e-5):
+
+    shape = [1] * x.ndim
+    shape[-1] = x.dims[-1]  # ones but last channel axis
+
+    b = tf.get_weight(name='beta', shape=shape, initializer=tf.constant_initializer(value=beta))
+    g = tf.get_weight(name='gamma', shape=shape, initializer=tf.constant_initializer(value=gamma))
 
     return inorm(x, beta=b, gamma=g, epsilon=epsilon)
+
+
+@layer
+def pbn(x, beta=0.0, gamma=1.0, epsilon=1e-5):
+
+    shape = [1] * x.ndim
+    shape[-1] = x.dims[-1]  # ones but last channel axis
+    axes = range(x.ndim - 1)  # axes = [1,2] for BWHC except batch, channel
+
+    b = tf.get_weight(name='beta', shape=shape, initializer=tf.constant_initializer(value=beta))
+    g = tf.get_weight(name='gamma', shape=shape, initializer=tf.constant_initializer(value=gamma))
+
+    m, v = tf.nn.moments(x, axes=axes, keep_dims=True)
+
+    # out = (x - m) / tf.sqrt(v + epsilon)
+    out = tf.nn.batch_normalization(x, m, v, beta, gamma, epsilon)
+
+    return out
 
 # endregion
 

@@ -47,10 +47,10 @@ def feeds(data):
         for d in tf.feeds(data):
             print(d)
 
-    :param tf.Tensor data:
+    :param tf.Tensor|tf.Dic|list data:
     :return:
     """
     with feeding() as (sess, coord):
         while not coord.should_stop():
-            yield data.eval()
+            yield sess.run(data)
 
