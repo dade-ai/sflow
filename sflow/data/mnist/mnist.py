@@ -3,8 +3,7 @@
 data from https://s3.amazonaws.com/img-datasets/mnist.npz
 https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/keras/python/keras/datasets/mnist.py
 """
-
-import sflow.gpu0 as tf
+import sflow.tf as tf
 import sflow.py as py
 import numpy as np
 import os
@@ -29,7 +28,7 @@ def dataset_train(batch, size=(28, 28), folder=None):
 
         if x.ndim == 3:
             x = x.expand_dims(3)
-        if x.dtype == tf.int8:
+        if x.dtype != tf.float32:
             x = x.to_float() / 255.
 
         y = y.to_int32()
@@ -53,7 +52,7 @@ def dataset_test(batch, shuffle=True, size=(28, 28), folder=None):
 
         if x.ndim == 3:
             x = x.expand_dims(3)
-        if x.dtype == tf.int8:
+        if x.dtype != tf.float32:
             x = x.to_float() / 255.
 
         y = y.to_int32()
