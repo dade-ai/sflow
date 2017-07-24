@@ -107,10 +107,11 @@ class _SummaryWriter(object):
         # self.summaryper = summaryper
         # self._global_step = global_step or tf.get_global_step()
         self.summaryop = summaryop if summaryop is not None else tf.summary.merge_all()
+        self._session = default_session()
 
     def add_summary(self, gstep, sess=None, summary=None, other_op=None):
         if summary is None:
-            sess = sess or default_session()
+            sess = sess or self._session
             if other_op is not None:
                 summary = sess.run([self.summaryop] + other_op)[0]
             else:
@@ -142,15 +143,23 @@ def init_operations(scope=None):
 
 def backup_train_script_to(savedir, depth=2):
     from snipy.caller import caller
-    from snipy.io.fileutil import filecopy
+    from snipy.io.fileutil import (filecopy, mkdir_if_not)
     from time import time
+    from sflow.tf import flag
     import os
 
     # get script file and copy
     forg = caller.abspath(depth)
     name = os.path.basename(forg)
+
     fname = os.path.join(savedir, 'backup.{}.{}'.format(str(time()), name))
+    mkdir_if_not(fname)
     filecopy(forg, fname)
+
+    # save flag values
+    values = '# flag values when running : {}'.format(dict(flag))
+    with open(fname, 'a') as f:
+        f.write(values)
 
 
 def trainall(outputs, savers=None, ep=None, maxep=None, epochper=10000, saveper=1):

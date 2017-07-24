@@ -219,9 +219,12 @@ def run(main=None, argv=None, **flags):
     a = inspect.getargspec(main)  # namedtuple(args, varargs, keywords, defaults)
     if a.defaults:
         kwargs = dict(zip(reversed(a.args), reversed(a.defaults)))
-        add_flag(**kwargs)
     else:
         kwargs = dict()
+
+    # merge function default and kwargs of main
+    kwargs.update(flags)
+    add_flag(**kwargs)
 
     # add to command argument
     if a.defaults is None:
@@ -231,7 +234,11 @@ def run(main=None, argv=None, **flags):
     # if nargs > 0:
     posargs = a.args[:nargs]
     flag.add_args(posargs)
-    add_flag(**flags)
+
+    # add_flag(**flags)
+    # except _argparse.ArgumentError as e:
+    #     # when argument conflicting
+    #     logg.warn(e.message)
 
     # Extract the args from the optional `argv` list.
     args = argv[1:] if argv else None
@@ -240,12 +247,15 @@ def run(main=None, argv=None, **flags):
     # line otherwise.
     unparsed, kw = flag._parse_flags_kw(args=args)
 
-    d = flag.__dict__['__flags']
-    args = [d[k] for k in posargs]
+    _flag = flag.__dict__['__flags']
+    args = [_flag[k] for k in posargs]
     args += unparsed
 
-    kwargs.update({k: d[k] for k in kwargs.keys()})
+    kwargs.update({k: _flag[k] for k in kwargs.keys()})
     kwargs.update(kw)
+
+    # update flag singleton
+    _flag.update(kwargs)
 
     # Call the main function, passing through any arguments,
     # with parsed flags as kwwargs
@@ -253,3 +263,5 @@ def run(main=None, argv=None, **flags):
     _sys.exit(main(*args, **kwargs))
 
 # endregion
+# import tensorflow as tf
+# tf.app.run

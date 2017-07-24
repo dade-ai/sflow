@@ -191,6 +191,10 @@ def trains_increase_step(trainops=None, global_step=None, name=None):
 
     if trainops is None or len(trainops) == 0:
         trainops = trainoplist
+
+    if trainops is None or len(trainops) == 0:
+        raise ValueError('no trainops')
+
     global_step = global_step or get_global_step()
 
     with tf.control_dependencies(trainops):

@@ -92,7 +92,7 @@ def convert_checkpoint(inpath, savepath, name_map, scope=None):
 
 
 def restore_checkpoint(fpath, var_list=None, scope=None, exclude=None,
-                       sess=None, verbose=False):
+                       sess=None, verbose=False, initialize=True):
     """
     load ckpt file and assign value to variables
     :param var_list:
@@ -101,11 +101,16 @@ def restore_checkpoint(fpath, var_list=None, scope=None, exclude=None,
     :param verbose:
     :param sess:
     :param fpath: checkpoint file path
+    :param bool initialize : initialize uninitialzed
     :return: (not_restored_var, not_compatible_var)
     """
     info = info_checkpoint(fpath)
 
     var_list = var_list or tf.scope_collect(scope=scope, exclude=exclude)  # tf.global_variables()
+
+    if verbose:
+        tf.logg.info('[saved:' + '-' * 10)
+        tf.logg.info('\n'.join(info.keys()))
 
     restore = [v for v in var_list if v.op.name in info.keys()]
     passed, notfit = [], []
@@ -140,6 +145,9 @@ def restore_checkpoint(fpath, var_list=None, scope=None, exclude=None,
     ignored = info.keys()
 
     # (not_restored_vars, not_compatible_vars)
+    if initialize:
+        tf.variables_initializer(tf.uninitialized_variables()).run()
+
     return ignored, notfit
 
 

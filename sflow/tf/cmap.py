@@ -2,6 +2,8 @@
 from snipy.plt import cmap
 import tensorflow as tf
 
+# see : http://matplotlib.org/api/cm_api.html?highlight=norm%20colormap
+
 _funs = [f for f in dir(cmap) if not f.startswith('_')]
 
 
@@ -30,7 +32,8 @@ def jet(t, alpha=None, bytes=None, lut=None, dtype=tf.float32):
     :param t:
     :param alpha:
     :param bytes:
-    :param lut:
+    :param lut: If lut is not None it must be an integer giving the number of entries desired in the lookup table,
+    and name must be a standard mpl colormap name.
     :param dtype:
     :return:
     """
