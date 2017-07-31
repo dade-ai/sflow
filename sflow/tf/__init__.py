@@ -15,7 +15,8 @@ if not help_flag:
     parse_flag(verbose=False)
     if flag.cuda:
         from sflow import gpu
-        gpu.visible_devices(flag.cuda)
+        # string..
+        flag.cuda = gpu.visible_devices(flag.cuda)
 
 # endregion
 
@@ -37,3 +38,5 @@ from .. import io
 from .. import sample
 from . import cmap
 
+from .run_grid import run_grid
+# import run_grid

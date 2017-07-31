@@ -135,7 +135,7 @@ class _FlagValuesNone(MutableMapping):
     def add_args(self, args):
         # add positional arguments
         for i, a in enumerate(args):
-            _parser.add_argument(a, nargs=i+1)
+            _parser.add_argument(a, nargs=1)
 
 flag = _FlagValuesNone()
 

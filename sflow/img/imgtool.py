@@ -589,5 +589,5 @@ if __name__ == '__main__':
 
     img = coffee(True)
     a = rotate(img, tf.pi)
-    py.plt.imshow([img, a])
-    py.plt.plot_pause()
+    py.imshow([img, a])
+    py.plot_pause()
