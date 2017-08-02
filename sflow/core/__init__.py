@@ -35,7 +35,8 @@ from .ifunctional import *
 
 from .ipatch import (concat, lookup, lookup_2d, flat, sum, mean, min, max, all, any, prod,
                      top_k, sort, argsort, shiftdim,
-                     to_tensor, astype, repeat, repeats, select, pad_to_shape)
+                     to_tensor, astype, repeat, repeats, select, pad_to_shape,
+                     crop)
 from .iextra import *
 
 from . import optim

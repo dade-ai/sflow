@@ -282,6 +282,10 @@ def _run(o, feed_dict=None, sess=None):
     return o._run(feed_dict=feed_dict, session=sess or o.session)  # tf.get_default_session())
 
 
+def initialize_if_not(sess=None):
+    tf.variables_initializer(uninitialized_variables(sess=sess)).run()
+
+
 @tuple_args
 def restore_or_initialize(savers, ep=None):
     for saver in savers:

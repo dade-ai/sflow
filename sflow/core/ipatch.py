@@ -324,6 +324,16 @@ def pad_to_shape(x, shape=None, name=None):
 
 
 @patchmethod(tf.Tensor, tf.Variable)
+def crop(x, crops, axis=None, name=None):
+    if axis is not None:
+        raise NotImplementedError
+
+    slices = [slice(c0, -c1 or None) for c0, c1 in crops]
+    res = x.__getitem__(slices)
+    return tf.identity(res, name=name or 'crop')
+
+
+@patchmethod(tf.Tensor, tf.Variable)
 def transpose(x, *perm, **kwperm):
     if len(perm) == 1 and isinstance(perm[0], (tuple, list)):
         perm = perm[0]
