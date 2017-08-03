@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from six import wraps
-from collections import (MutableMapping, defaultdict)
+from collections import (MutableMapping, defaultdict, Mapping)
 
 from tensorflow.python.framework.ops import _DefaultStack
 # import tensorflow as tf
@@ -75,6 +75,37 @@ class Dic(MutableMapping):
         from .icore import default_session
         sess = sess or default_session()
         return sess.run(self, feed_dict=feed_dict, options=options, run_metadata=run_metadata, **kwargs)
+
+    @classmethod
+    def dict_to_dic(cls, data):
+        """
+        convert recursively
+        :param data:
+        :return:
+        """
+        if isinstance(data, (tuple, list)):
+            t = type(data)
+            return t(cls.dict_to_dic(d) for d in data)
+        elif isinstance(data, (Mapping)):
+            return Dic((k, cls.dict_to_dic(v)) for k, v in data.iteritems())
+        else:
+            return data
+
+    @classmethod
+    def dic_to_dict(cls, data):
+        """
+        convert recursively
+        :param data:
+        :return:
+        """
+        if isinstance(data, (tuple, list)):
+            t = type(data)
+            return t(cls.dic_to_dict(d) for d in data)
+        elif isinstance(data, (Mapping)):
+            return dict((k, cls.dic_to_dict(v)) for k, v in data.iteritems())
+        else:
+            return data
+
 
 
 # aliasing

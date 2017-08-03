@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-
 import tensorflow as tf
 
 from snipy.basic import (optional_str, wraps)
 # from .common23 import *
+from .logg import logg
 
 
 @optional_str
@@ -93,6 +93,37 @@ class _Scoped(object):
         with tf.variable_scope(n, self.name, args) as vscope:
             return self.fun(*args, **kwargs)
 
+# tf.make_template()
+# from tensorflow.python.framework.ops.template import Template
+from tensorflow.python.ops.template import Template
+
+
+class TemplateEx(Template):
+
+    def __init__(self, name, func, **kwargs):
+        self.__name__ = func.__name__
+        super(TemplateEx, self).__init__(name, func, **kwargs)
+
+    def __call__(self, *args, **kwargs):
+        if self._variables_created:
+            logg.info('reusing template: {}'.format(self.__name__))
+        return super(TemplateEx, self).__call__(*args, **kwargs)
+
+# #keep original function
+# _make_template = tf.make_template
+
+
+def make_template(func, name=None, create_scope_now_=False, unique_name_=None,
+                  custom_getter_=None, **kwargs):
+    import functools
+    # modified from tensorflow source
+    name = name if name is not None else func.__name__
+
+    if kwargs:
+        func = functools.partial(func, **kwargs)
+    return TemplateEx(name, func, create_scope_now=create_scope_now_,
+                      unique_name=unique_name_, custom_getter=custom_getter_)
+
 
 @optional_str
 def reuse_scope(name=None):
@@ -122,7 +153,7 @@ def reuse_scope(name=None):
     """
 
     def wrap(fun):
-        return _make_template(fun, name)
+        return make_template(fun, name)
 
     return wrap
 
@@ -138,16 +169,10 @@ def reusable(fun, name=None):
     # from tensorflow.python.ops.template import Template
 
     if isinstance(fun, _Scoped):
-        return _make_template(fun, '')
+        return make_template(fun, '')
     else:
-        return _make_template(fun, name)
+        return make_template(fun, name)
 
-
-def _make_template(fun, name=None):
-    name = name if name is not None else fun.__name__
-    template = tf.make_template(name, fun)
-    template.__name__ = fun.__name__
-    return template
 
 
 # endregion

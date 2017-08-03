@@ -211,12 +211,10 @@ tf.Session.__base__._org_run = tf.Session.__base__.run
 
 @patchmethod(tf.Session.__base__, name='run')
 def _run_session(sess, fetches, feed_dict=None, options=None, run_metadata=None, **kwargs):
-    if isinstance(fetches, Dic):
-        fetches = dict(fetches)
-        out = sess._org_run(fetches, feed_dict=feed_dict, options=options, run_metadata=run_metadata, **kwargs)
-        return Dic(out)
-    else:
-        return sess._org_run(fetches, feed_dict=feed_dict, options=options, run_metadata=run_metadata, **kwargs)
+    fetches = Dic.dic_to_dict(fetches)
+    out = sess._org_run(fetches, feed_dict=feed_dict, options=options, run_metadata=run_metadata, **kwargs)
+    return Dic.dict_to_dic(out)
+
 
 # endregion
 
