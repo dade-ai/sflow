@@ -122,8 +122,7 @@ def reuse_scope(name=None):
     """
 
     def wrap(fun):
-        n = name or fun.__name__
-        return tf.make_template(n, fun)
+        return _make_template(fun, name)
 
     return wrap
 
@@ -139,9 +138,16 @@ def reusable(fun, name=None):
     # from tensorflow.python.ops.template import Template
 
     if isinstance(fun, _Scoped):
-        return tf.make_template('', fun)
+        return _make_template(fun, '')
     else:
-        return tf.make_template(name or fun.__name__, fun)
+        return _make_template(fun, name)
+
+
+def _make_template(fun, name=None):
+    name = name if name is not None else fun.__name__
+    template = tf.make_template(name, fun)
+    template.__name__ = fun.__name__
+    return template
 
 
 # endregion

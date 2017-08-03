@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from tensorflow import *
 import tensorflow as tf
 
-__version__ = '1.12.0'
+__version__ = '1.2.1'
 
 try:
     # noinspection PyUnresolvedReferences

@@ -9,7 +9,7 @@ from .defaults import Dic
 from snipy.basic import (patchmethod, patchproperty, tuple_args)
 
 
-def get_var(name, shape=None, dtype=None, initializer=None, value=None, **kwargs):
+def get_var(name, shape=None, dtype=None, initializer=None, **kwargs):
     """
     variable create and init
     :param value:
@@ -20,22 +20,26 @@ def get_var(name, shape=None, dtype=None, initializer=None, value=None, **kwargs
     :param kwargs:
     :return:
     """
-
-    def _init_by_value(*args, **kwargs):
-        return value
-
-    if value is not None and dtype is None:
+    def _common_dtype(value, d):
+        if d is not None:
+            return d
         try:
             if value.dtype == 'float64':
-                dtype = const.floatx
+                d = const.floatx
             elif value.dtype == 'int64':
-                dtype = const.intx
+                d = const.intx
         except AttributeError:
-            pass
-    if initializer is None and value is not None:
-        initializer = _init_by_value
+            d = value.dtype
+        return d
 
-    v = tf.get_variable(name=name, shape=shape, dtype=dtype, initializer=initializer, **kwargs)
+    if not callable(initializer):
+        # If initializer is a constant or tensor, do not specify shape.
+        initializer = tf.convert_to_tensor(initializer, dtype=dtype)
+        assert initializer.shape == shape
+        dtype = _common_dtype(initializer, dtype)
+        v = tf.get_variable(name=name, dtype=dtype, initializer=initializer, **kwargs)
+    else:
+        v = tf.get_variable(name=name, shape=shape, dtype=dtype, initializer=initializer, **kwargs)
 
     return v
 
@@ -116,7 +120,7 @@ def is_training(graph=None):
         v = g._is_training
     except AttributeError:
         with tf.variable_scope(g.root_scope):
-            v = get_var('is_training', value=True, dtype=tf.bool, shape=(), trainable=False)
+            v = get_var('is_training', initializer=True, dtype=tf.bool, shape=(), trainable=False)
         g._is_training = v
     return v
 
@@ -128,7 +132,7 @@ def global_step(graph=None):
         v = g._global_step
     except AttributeError:
         with tf.variable_scope(g.root_scope):
-            v = get_var('global_step', value=0, dtype=tf.int64, trainable=False, shape=(),
+            v = get_var('global_step', initializer=0, dtype=tf.int64, trainable=False, shape=(),
                         collections=[tf.GraphKeys.GLOBAL_VARIABLES, tf.GraphKeys.GLOBAL_STEP],
                         )
         g._global_step = v
@@ -219,18 +223,17 @@ def _run_session(sess, fetches, feed_dict=None, options=None, run_metadata=None,
 
 # region variable wrappers
 
-def variable(value=None, initializer=None, shape=None, dtype=None, name=None, **kwargs):
+def variable(initializer=None, shape=None, dtype=None, name=None, **kwargs):
     """
     variable create and init
-    :param value:
-    :param Callable initializer:
+    :param initializer: callable(shape) or value
     :param shape:
     :param dtype:
     :param name:
     :param kwargs:
     :return:
     """
-    return get_var(name, shape=shape, dtype=dtype, initializer=initializer, value=value, **kwargs)
+    return get_var(name, shape=shape, dtype=dtype, initializer=initializer, **kwargs)
 
 
 def get_weight(name, **kwargs):

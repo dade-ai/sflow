@@ -355,6 +355,7 @@ def dense(x, outdim, initializer=tf.glorot_uniform, bias=False, name=None):
 
     shape = [x.dims[-1], outdim]
     W = tf.get_weight('W', shape=shape, initializer=initializer(shape))
+    # W = tf.get_weight('W', initializer=initializer(shape))
     out = x.dot(W)
     if bias:
         b = tf.get_bias('b', shape=(outdim,), initializer=tf.zeros_initializer())
