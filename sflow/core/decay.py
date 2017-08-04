@@ -28,9 +28,9 @@ def piecewise(boundaries, lr=None, name=None):
     return piecewise_constant
 
 
-def linear(decay_steps, end_learning_rate=0.0001,
+def linear(decay_steps, lr_end=0.0001,
            cycle=False, lr=None, name=None):
-    return polynomial(decay_steps, end_learning_rate=end_learning_rate,
+    return polynomial(decay_steps, end_learning_rate=lr_end,
                       cycle=cycle, lr=lr, name=name, power=1.0)
 
 
