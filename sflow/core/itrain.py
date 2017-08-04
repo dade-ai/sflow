@@ -11,7 +11,7 @@ from .icore import (default_session, get_global_step)
 class _SaverWrap(object):
 
     def __init__(self, savepath, global_step=None, epochper=1,
-                 var_list=None, scope=None, **kwargs):
+                 var_list=None, scope=None, keep_optim=False, **kwargs):
         """
         todo : add comment
         :param savepath:
@@ -34,6 +34,11 @@ class _SaverWrap(object):
 
             var_list = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=scope)
             var_list += tf.get_collection(tf.GraphKeys.MODEL_VARIABLES, scope=scope)
+
+            # todo: test this
+            if not keep_optim:
+                opt_vars = tf.get_collection('OPTIMIZER_VAR')
+                var_list = [v for v in var_list not in opt_vars]
 
             if self._global_step not in var_list:
                 var_list += [self._global_step]
@@ -129,11 +134,13 @@ def summary_writer(logdir=None, summaryop=None, **kwargs):
 
 
 def saver(savedir='train', global_step=None, epochper=1,
-          var_list=None, scope=None, **kwargs):
+          var_list=None, scope=None, keep_optim=False, **kwargs):
     # todo add some comment
 
     return _SaverWrap(savepath=savedir, global_step=global_step,
-                      epochper=epochper, var_list=var_list, scope=scope, **kwargs)
+                      epochper=epochper, var_list=var_list, scope=scope,
+                      keep_optim=keep_optim,
+                      **kwargs)
 
 
 def init_operations(scope=None):

@@ -128,6 +128,9 @@ def _minimize(optim, loss, global_step=None, var_list=None,
         lossname = '_'.join(scope)
     tf.summary.scalar('learning_rate/' + lossname, lr)
 
+    # check slot variables
+    tf.add_to_collection('OPTIMIZER_VAR', optim.get_variables())
+
     return update_op
 
 # endregion
@@ -167,6 +170,7 @@ def minimize(loss, lr=0.001, optim=None, decay=None, scope=None):
             lr = decay(lr, global_step=get_global_step())
         optim = optim(lr)
 
+    # noinspection PyArgumentList
     trainop = optim.minimize(loss, scope=scope)
 
     return trainop
