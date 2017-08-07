@@ -14,7 +14,7 @@ from . import logg as logg
 # region optimizer patch methods
 
 
-@patchmethod(tf.train.Optimizer, name='get_variables')
+@patchmethod(tf.train.Optimizer, name='get_slot_variables')
 def _get_slot_variables(opt):
     """
     optimizer variable list (공통)
@@ -31,10 +31,20 @@ def _get_slot_variables(opt):
     return list(_opt_variables(opt))
 
 
+@patchmethod(tf.train.Optimizer, name='get_variables')
+def _get_variables(opt):
+    """
+    optimizer variable list (공통)
+    :param tf.train.Optimizer opt:
+    :return list[tf.Tensor]:
+    """
+    return _get_slot_variables(opt)
+
+
 # noinspection PyProtectedMember
 @patchmethod(tf.train.AdamOptimizer, name='get_variables')
-def _get_variables(opt):
-    return opt._get_slot_variables() + list(opt._get_beta_accumulators())
+def _get_adam_variables(opt):
+    return opt.get_slot_variables() + list(opt._get_beta_accumulators())
 
 
 @patchmethod(tf.train.Optimizer, name='init_variables')

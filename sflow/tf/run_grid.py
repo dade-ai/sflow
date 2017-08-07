@@ -39,15 +39,30 @@ def _run_gpu(cuda, script, *args, **kwargs):
     return res
 
 
+def _run_gpu_test(cuda, script, *args, **kwargs):
+    import sys
+
+    params = ['--{}={}'.format(k, v) for k,v in kwargs.iteritems()]
+    cmd = 'python {} {} {} --cuda={} '.format(script, ' '.join(args), ' '.join(params), cuda)
+
+    logg.info('cmd: [{}]'.format(cmd))
+
+    # res = os.system(cmd)
+    sys.stdout.flush()
+
+    return 0
+
+
 class CudaJobQ(ActiveQ):
 
-    def __init__(self, jobq, cuda, script):
+    def __init__(self, jobq, cuda, script, action=None):
         self.cuda = cuda
         self.script = script
+        self._action = action or _run_gpu
         super(CudaJobQ, self).__init__(maxsize=10, jobq=jobq)
 
     def action(self, item):
-        _run_gpu(self.cuda, self.script, *item[0], **item[1])
+        return self._action(self.cuda, self.script, *item[0], **item[1])
 
     def join(self):
         if self._run_thread:
@@ -91,6 +106,9 @@ def run_grid(script, *args, **kwargs):
     from snipy.iterflow import iqueue
     script = script[0]
 
+    test = kwargs.pop('test', False)
+    action = _run_gpu_test if test else None
+
     logg.info('script == {}'.format(script))
     logg.info('args== {}'.format(str(args)))
 
@@ -105,7 +123,7 @@ def run_grid(script, *args, **kwargs):
     jobq = iqueue(_iter_combination(args, kwargs))
 
     # cudajob_q foreach gpu
-    cudaq = [CudaJobQ(jobq, str(i), script).start() for i in get_cuda_nums()]
+    cudaq = [CudaJobQ(jobq, str(i), script, action=action).start() for i in get_cuda_nums()]
 
     while not jobq.empty():
         sleep(1)
