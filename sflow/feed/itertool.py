@@ -4,7 +4,20 @@ from six import wraps
 
 
 class iterable(object):
-
+    """
+    decorator
+    ex)
+    @iterable
+    def example(n):
+        for i in range(n):
+            yield i
+    e1 = example(10)
+    e2 = example(8)
+    for i in e1:
+        print i
+    for i in e2:
+        print i
+    """
     def __init__(self, gen):
         self._gen = gen
 
@@ -14,16 +27,7 @@ class iterable(object):
 
 class iterator(object):
     """
-    dont use for decorator@!!!!
-    decorator or like a function for converting generator fun to iterable
-    ex)
-    @iterable
-    def example():
-        for i in range(i):
-            yield i
-    e = example()
-    for i in e:
-        print i
+    reiterable object
     """
 
     def __init__(self, gen, *args, **kwargs):
