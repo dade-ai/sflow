@@ -263,7 +263,8 @@ def trainstep(ep=None, maxep=None, epochper=1, saveper=1, savers=None, ep_restor
         savers = [savers]
 
     # leave backup script
-    backup_train_script_to(savers[0].savedir)
+    if backup:
+        backup_train_script_to(savers[0].savedir)
 
     restore_or_initialize(savers, ep=ep_restore)
     set_training(True)

@@ -28,7 +28,7 @@ def _feed_fn(gen, placeholders):
 
 
 def gen_producer(placeholders, gen, capacity, min_after_dequeue=0,
-                 threads=1, shuffle=False, enqueue_many=False):
+                 threads=1, shuffle=False, enqueue_many=False, summary_name=None):
     """
     example::
         todo : add some example
@@ -46,7 +46,11 @@ def gen_producer(placeholders, gen, capacity, min_after_dequeue=0,
         placeholders = [placeholders]
 
     dtypes = [p.dtype for p in placeholders]
-    shapes = [p.get_shape() for p in placeholders]
+    if any(not p.shape.is_fully_defined() for p in placeholders):
+        shapes = None
+        # warning.. no dequeue many
+    else:
+        shapes = [p.get_shape() for p in placeholders]
 
     if shuffle:
         # q = tf.RandomShuffleQueue(capacity, min_after_dequeue, dtypes, shapes=shapes, names=names)
@@ -65,6 +69,9 @@ def gen_producer(placeholders, gen, capacity, min_after_dequeue=0,
         enq = q.enqueue_many(placeholders)
     else:
         enq = q.enqueue(placeholders)
+
+    if summary_name is not None:
+        tf.summary.scalar(summary_name, tf.cast(q.size(), tf.dtypes.float32) * (1. / capacity))
 
     feedgen = _feed_fn(gen, placeholders)
     qr = GenQueueRunner(queue=q, enqueue_ops=[enq]*threads, feed_fns=[feedgen]*threads,

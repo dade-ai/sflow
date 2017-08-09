@@ -1,9 +1,20 @@
 # -*- coding: utf-8 -*-
 from functools import update_wrapper
+from six import wraps
 
 
 class iterable(object):
+
+    def __init__(self, gen):
+        self._gen = gen
+
+    def __call__(self, *args, **kwargs):
+        return iterator(self._gen, *args, **kwargs)
+
+
+class iterator(object):
     """
+    dont use for decorator@!!!!
     decorator or like a function for converting generator fun to iterable
     ex)
     @iterable
@@ -68,8 +79,8 @@ class iterable(object):
         return str(self._gen)
 
 
-def iterator(g, *args, **kwargs):
-    it = iterable(g)
+def iterate(g, *args, **kwargs):
+    it = iterator(g)
     return it(*args, **kwargs)
 
 
