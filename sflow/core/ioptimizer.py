@@ -139,7 +139,7 @@ def _minimize(optim, loss, global_step=None, var_list=None,
     tf.summary.scalar('learning_rate/' + lossname, lr)
 
     # check slot variables
-    tf.add_to_collection('OPTIMIZER_VAR', optim.get_variables())
+    # tf.add_to_collection('OPTIMIZER_VAR', optim.get_variables())
 
     return update_op
 

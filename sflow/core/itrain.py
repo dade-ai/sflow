@@ -35,10 +35,10 @@ class _SaverWrap(object):
             var_list = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=scope)
             var_list += tf.get_collection(tf.GraphKeys.MODEL_VARIABLES, scope=scope)
 
-            # todo: test this
-            if not keep_optim:
-                opt_vars = tf.get_collection('OPTIMIZER_VAR')
-                var_list = [v for v in var_list not in opt_vars]
+            # # todo: test this
+            # if not keep_optim:
+            #     opt_vars = tf.get_collection('OPTIMIZER_VAR')
+            #     var_list = [v for v in var_list not in opt_vars]
 
             if self._global_step not in var_list:
                 var_list += [self._global_step]
