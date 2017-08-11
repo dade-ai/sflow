@@ -86,6 +86,7 @@ class _Scoped(object):
 
     def __init__(self, fun, name):
         self.name = name
+        self.__name__ = name
         self.fun = fun
 
     def __call__(self, *args, **kwargs):
@@ -105,8 +106,12 @@ class TemplateEx(Template):
         super(TemplateEx, self).__init__(name, func, **kwargs)
 
     def __call__(self, *args, **kwargs):
-        if self._variables_created:
-            logg.info('reusing template: {}'.format(self.__name__))
+        reuse = kwargs.pop('reuse', True)
+        if reuse is not True:
+            return self._func(*args, **kwargs)
+        else:
+            if self._variables_created:
+                logg.info('reusing template: {}'.format(self.__name__))
         return super(TemplateEx, self).__call__(*args, **kwargs)
 
 # #keep original function
@@ -172,7 +177,6 @@ def reusable(fun, name=None):
         return make_template(fun, '')
     else:
         return make_template(fun, name)
-
 
 
 # endregion
