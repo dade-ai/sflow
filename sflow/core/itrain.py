@@ -125,7 +125,10 @@ class _SummaryWriter(object):
         print('[{}]'.format(self.logdir)),
         print('summary', end='')
 
-        self._writer.add_summary(summary, global_step=gstep)
+        if isinstance(summary, (tuple, list)):
+            [self._writer.add_summary(s, global_step=gstep) for s in summary]
+        else:
+            self._writer.add_summary(summary, global_step=gstep)
 
 
 def summary_writer(logdir=None, summaryop=None, **kwargs):
