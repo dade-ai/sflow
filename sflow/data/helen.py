@@ -158,7 +158,7 @@ def label_to_rgb(label):
 
 
 if __name__ == '__main__':
-    import sflow.gpu0 as tf
+    import sflow.tf as tf
     d = trainset(16)
     import matplotlib.pyplot as plt
 
