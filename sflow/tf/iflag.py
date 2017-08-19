@@ -212,7 +212,7 @@ def run(main=None, argv=None, **flags):
     main = main or _sys.modules['__main__'].main
 
     if main.__doc__:
-        docstring = main.__doc__.split(':param')[0]
+        docstring = main.__doc__  #.split(':param')[0]
         _parser.usage = 'from docstring \n {}'.format(docstring)  # add_help
 
     # if not flags:
