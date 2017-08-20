@@ -147,6 +147,67 @@ def conv3d(x, outdim, kernel, stride=1, pad=0, padding='SAME', mode='CONSTANT',
 # region normalization
 
 
+@layer
+def bn(x, stddev=0.002, beta=0.0, gamma=1.0, epsilon=1e-5, decay=0.9, axis=-1, training=None, **kwargs):
+    init_gamma = tf.random_normal_initializer(mean=gamma, stddev=stddev)
+    init_beta = tf.constant_initializer(beta)
+
+    reuse = tf.get_variable_scope().reuse
+    if training is None and (reuse or kwargs.get('reuse', False)):
+        training = False
+    elif training is None:
+        training = x.graph.is_training
+
+    # reuse = reuse is None or reuse is True
+    out = tf.layers.batch_normalization(x, axis=axis, momentum=decay, epsilon=epsilon,
+                                        beta_initializer=init_beta,
+                                        gamma_initializer=init_gamma,
+                                        moving_mean_initializer=tf.zeros_initializer(),
+                                        moving_variance_initializer=tf.ones_initializer(),
+                                        training=training,
+                                        **kwargs
+                                        )
+    return out
+
+
+# @layer
+def bn_old_buggy(x, stddev=0.002, beta=0.0, gamma=1.0, epsilon=1e-5, decay=0.9, **kwargs):
+    #  http://arxiv.org/abs/1502.03167
+    # contrib/layers/python/layers/layers.py
+    # a = tf.contrib.layers.batch_norm
+    # from tensorflow.contrib.layers.python.layers.layers import batch_norm
+
+    # see ioptimizer
+
+    init_gamma = tf.random_normal_initializer(mean=gamma, stddev=stddev)
+    init_beta = tf.constant_initializer(beta)
+
+    shapelast = x.dims[-1:]
+
+    # params
+    beta_v = tf.get_weight(name='beta', shape=shapelast, initializer=init_beta)
+    gamma_v = tf.get_weight(name='gamma', shape=shapelast, initializer=init_gamma)
+
+    # non trainable params
+    # collections = [tf.GraphKeys.GLOBAL_VARIABLES, tf.GraphKeys.MOVING_AVERAGE_VARIABLES]
+    collections = [tf.GraphKeys.MODEL_VARIABLES, tf.GraphKeys.MOVING_AVERAGE_VARIABLES]
+
+    moving_mean = tf.get_variable(name='moving_mean', shape=shapelast,
+                                  initializer=tf.zeros_initializer(),
+                                  trainable=False,
+                                  collections=collections)
+    moving_var = tf.get_variable(name='moving_var', shape=shapelast,
+                                 initializer=tf.ones_initializer(),
+                                 trainable=False,
+                                 collections=collections)
+
+    out = _batch_normalization(x, beta_v, gamma_v, moving_mean, moving_var, epsilon,
+                               decay=decay, **kwargs)
+
+    return out
+
+
+# buggy
 def _batch_normalization(x, beta, gamma, moving_mean, moving_var, epsilon, decay=0.999,
                          axis=None, name=None, is_training=None):
     from tensorflow.python.training import moving_averages
@@ -179,41 +240,6 @@ def _batch_normalization(x, beta, gamma, moving_mean, moving_var, epsilon, decay
     inference.set_shape(x.get_shape())
 
     return inference
-
-
-@layer
-def bn(x, stddev=0.002, beta=0.0, gamma=1.0, epsilon=1e-5, decay=0.9, **kwargs):
-    #  http://arxiv.org/abs/1502.03167
-    # contrib/layers/python/layers/layers.py
-    # a = tf.contrib.layers.batch_norm
-    # from tensorflow.contrib.layers.python.layers.layers import batch_norm
-
-    init_gamma = tf.random_normal_initializer(mean=gamma, stddev=stddev)
-    init_beta = tf.constant_initializer(beta)
-
-    shapelast = x.dims[-1:]
-
-    # params
-    beta_v = tf.get_weight(name='beta', shape=shapelast, initializer=init_beta)
-    gamma_v = tf.get_weight(name='gamma', shape=shapelast, initializer=init_gamma)
-
-    # non trainable params
-    # collections = [tf.GraphKeys.GLOBAL_VARIABLES, tf.GraphKeys.MOVING_AVERAGE_VARIABLES]
-    collections = [tf.GraphKeys.MODEL_VARIABLES, tf.GraphKeys.MOVING_AVERAGE_VARIABLES]
-
-    moving_mean = tf.get_variable(name='moving_mean', shape=shapelast,
-                                  initializer=tf.zeros_initializer(),
-                                  trainable=False,
-                                  collections=collections)
-    moving_var = tf.get_variable(name='moving_var', shape=shapelast,
-                                 initializer=tf.ones_initializer(),
-                                 trainable=False,
-                                 collections=collections)
-
-    out = _batch_normalization(x, beta_v, gamma_v, moving_mean, moving_var, epsilon,
-                               decay=decay, **kwargs)
-
-    return out
 
 
 @layer
@@ -310,6 +336,77 @@ def pbn(x, beta=0.0, gamma=1.0, epsilon=1e-5):
     out = tf.nn.batch_normalization(x, m, v, beta, gamma, epsilon)
 
     return out
+
+
+@layer
+def dn(x, stddev=0.002, beta=0.0, gamma=1.0, epsilon=1e-5, decay=0.9, training=None, **kwargs):
+    init_gamma = tf.random_normal_initializer(mean=gamma, stddev=stddev)
+    init_beta = tf.constant_initializer(beta)
+
+    shapelast = x.dims[-1:]
+
+    # params
+    beta_v = tf.get_weight(name='beta', shape=shapelast, initializer=init_beta)
+    gamma_v = tf.get_weight(name='gamma', shape=shapelast, initializer=init_gamma)
+
+    # non trainable params
+    # collections = [tf.GraphKeys.GLOBAL_VARIABLES, tf.GraphKeys.MOVING_AVERAGE_VARIABLES]
+    collections = [tf.GraphKeys.MODEL_VARIABLES, tf.GraphKeys.MOVING_AVERAGE_VARIABLES]
+
+    moving_mean = tf.get_variable(name='moving_mean', shape=shapelast,
+                                  initializer=tf.zeros_initializer(),
+                                  trainable=False,
+                                  collections=collections)
+    moving_var = tf.get_variable(name='moving_var', shape=shapelast,
+                                 initializer=tf.ones_initializer(),
+                                 trainable=False,
+                                 collections=collections)
+
+    out = _data_normalization(x, beta_v, gamma_v, moving_mean, moving_var, epsilon,
+                              decay=decay, training=None, **kwargs)
+
+    return out
+
+
+def _data_normalization(x, beta, gamma, moving_mean, moving_var, epsilon, decay=0.999,
+                        axis=None, training=None, name=None, **kwargs):
+    from tensorflow.python.training import moving_averages
+
+    # todo : test
+
+    axis = range(x.ndim - 1) if axis is None else axis  # [0,1,2] for NHWC
+
+    def update_moments():
+        m, v = tf.nn.moments(x, axis)
+        update_mean = moving_averages.assign_moving_average(moving_mean, m, decay)
+        update_var = moving_averages.assign_moving_average(moving_var, v, decay)
+
+        # todo@dade : check this
+        # with tf.control_dependencies([update_mean, update_var]):
+        #     return tf.identity(moving_mean), tf.identity(moving_var)
+
+        tf.add_to_collection(tf.GraphKeys.UPDATE_OPS, update_mean)
+        tf.add_to_collection(tf.GraphKeys.UPDATE_OPS, update_var)
+
+        return tf.identity(moving_mean), tf.identity(moving_var)
+
+    reuse = tf.get_variable_scope().reuse
+    if training is None:
+        if reuse or kwargs.get('reuse', False):
+            training = False
+        else:
+            training = x.graph.is_training
+
+    if training:
+        mean, var = update_moments()
+    else:
+        mean, var = moving_mean, moving_var
+
+    inference = tf.nn.batch_normalization(x, mean, var, beta, gamma, epsilon, name=name)
+    inference.set_shape(x.get_shape())
+
+    return inference
+
 
 # endregion
 

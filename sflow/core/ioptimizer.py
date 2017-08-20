@@ -122,11 +122,11 @@ def _minimize(optim, loss, global_step=None, var_list=None,
             summary_gradient(v, g)
 
     # todo@dade : check this (bn)
-    # updates = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-    # with tf.control_dependencies(updates):
-    #     update_op = optim.apply_gradients(grads_and_vars, global_step=global_step, name=name)
+    updates = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    with tf.control_dependencies(updates):
+        update_op = optim.apply_gradients(grads_and_vars, global_step=global_step, name=name)
 
-    update_op = optim.apply_gradients(grads_and_vars, global_step=global_step, name=name)
+    # update_op = optim.apply_gradients(grads_and_vars, global_step=global_step, name=name)
 
     # add learning_rate scalar history with proper naming
     lr = _get_learning_rate_tensor(optim)
