@@ -170,6 +170,30 @@ def bn(x, stddev=0.002, beta=0.0, gamma=1.0, epsilon=1e-5, decay=0.9, axis=-1, t
     return out
 
 
+@layer
+def bn_center(x, stddev=0.002, beta=0.0, gamma=1.0, epsilon=1e-5, decay=0.9, axis=-1, training=None, **kwargs):
+    init_gamma = tf.random_normal_initializer(mean=gamma, stddev=stddev)
+    # init_beta = tf.constant_initializer(beta)
+
+    reuse = tf.get_variable_scope().reuse
+    if training is None and (reuse or kwargs.get('reuse', False)):
+        training = False
+    elif training is None:
+        training = x.graph.is_training
+
+    # reuse = reuse is None or reuse is True
+    out = tf.layers.batch_normalization(x, axis=axis, momentum=decay, epsilon=epsilon,
+                                        center=True,
+                                        # beta_initializer=init_beta,
+                                        gamma_initializer=init_gamma,
+                                        moving_mean_initializer=tf.zeros_initializer(),
+                                        moving_variance_initializer=tf.ones_initializer(),
+                                        training=training,
+                                        **kwargs
+                                        )
+    return out
+
+
 # @layer
 def bn_old_buggy(x, stddev=0.002, beta=0.0, gamma=1.0, epsilon=1e-5, decay=0.9, **kwargs):
     #  http://arxiv.org/abs/1502.03167

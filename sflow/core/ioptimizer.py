@@ -123,18 +123,23 @@ def _minimize(optim, loss, global_step=None, var_list=None,
 
     # todo@dade : check this (bn)
     # scope filtering
-    updates = []
-    if scope:
-        for s in scope:
-            updates.extend(tf.get_collection(tf.GraphKeys.UPDATE_OPS, scope=s))
-    else:
-        updates = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 
-    if updates:
-        with tf.control_dependencies(updates):
-            update_op = optim.apply_gradients(grads_and_vars, global_step=global_step, name=name)
-    else:
+    updates = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    with tf.control_dependencies(updates):
         update_op = optim.apply_gradients(grads_and_vars, global_step=global_step, name=name)
+
+    # updates = []
+    # if scope:
+    #     for s in scope:
+    #         updates.extend(tf.get_collection(tf.GraphKeys.UPDATE_OPS, scope=s))
+    # else:
+    #     updates = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    #
+    # if updates:
+    #     with tf.control_dependencies(updates):
+    #         update_op = optim.apply_gradients(grads_and_vars, global_step=global_step, name=name)
+    # else:
+    #     update_op = optim.apply_gradients(grads_and_vars, global_step=global_step, name=name)
 
     # update_op = optim.apply_gradients(grads_and_vars, global_step=global_step, name=name)
 
