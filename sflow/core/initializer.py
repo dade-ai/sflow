@@ -37,7 +37,7 @@ def _fans(shape):
 @default_deco
 def glorot_uniform(shape, scale=1., dtype=const.floatx, **kwargs):
     fanin, fanout = _fans(shape)
-    s = tf.sqrt(6. * scale / (fanin + fanout))
+    s = tf.sqrt(6. * scale / (fanin + fanout)).astype(dtype)
     _ = kwargs.pop('partition_info', None)
     return tf.random_uniform_initializer(minval=-s, maxval=s, dtype=dtype, **kwargs)
 
@@ -53,7 +53,7 @@ def glorot_normal(shape, scale=1., dtype=const.floatx, **kwargs):
 @default_deco
 def glorot_normaltr(shape, scale=1., dtype=const.floatx, **kwargs):
     fanin, fanout = _fans(shape)
-    s = tf.sqrt(3. * scale / (fanin + fanout))
+    s = tf.sqrt(3. * scale / (fanin + fanout)).astype(dtype)
     _ = kwargs.pop('partition_info', None)
     return tf.truncated_normal_initializer(mean=0.0, stddev=s, dtype=dtype, **kwargs)
 
@@ -61,7 +61,7 @@ def glorot_normaltr(shape, scale=1., dtype=const.floatx, **kwargs):
 @default_deco
 def he_uniform(shape, scale=1., dtype=const.floatx, **kwargs):
     fanin, fanout = _fans(shape)
-    s = tf.sqrt(2. * scale / fanin)
+    s = tf.sqrt(2. * scale / fanin).astype(dtype)
 
     # fixme : why? and what? how to..
     partition_info = kwargs.pop('partition_info', None)

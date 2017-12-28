@@ -194,6 +194,8 @@ def assets_folder(subfolder=''):
     else:
         p = os.path.expanduser(flag.assets_root)
         p = os.path.abspath(p)
+    if subfolder.startswith('/'):
+        subfolder = subfolder[1:]
     return os.path.join(p, subfolder)
 
 

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# -*- coding: utf-8 -*-
 """
 reference : https://github.com/pypa/sampleproject/blob/master/setup.py
 """
@@ -16,7 +15,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 
 setup(name='sflow',
-      version='1.2.1.2',
+      version='1.4.0',
       description='super slim and simple syntatic sugar for Tensorflow',
       long_description='텐서플로우 개취 탑재',
 
@@ -45,8 +44,8 @@ setup(name='sflow',
 
           # Specify the Python versions you support here. In particular, ensure
           # that you indicate whether you support Python 2, Python 3 or both.
-          'Programming Language :: Python :: 2',
-          'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6',
       ],
 
       packages=find_packages(),

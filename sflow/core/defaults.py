@@ -86,8 +86,8 @@ class Dic(MutableMapping):
         if isinstance(data, (tuple, list)):
             t = type(data)
             return t(cls.dict_to_dic(d) for d in data)
-        elif isinstance(data, (Mapping)):
-            return Dic((k, cls.dict_to_dic(v)) for k, v in data.iteritems())
+        elif isinstance(data, Mapping):
+            return Dic((k, cls.dict_to_dic(v)) for k, v in data.items())
         else:
             return data
 
@@ -101,11 +101,10 @@ class Dic(MutableMapping):
         if isinstance(data, (tuple, list)):
             t = type(data)
             return t(cls.dic_to_dict(d) for d in data)
-        elif isinstance(data, (Mapping)):
-            return dict((k, cls.dic_to_dict(v)) for k, v in data.iteritems())
+        elif isinstance(data, Mapping):
+            return dict((k, cls.dic_to_dict(v)) for k, v in data.items())
         else:
             return data
-
 
 
 # aliasing

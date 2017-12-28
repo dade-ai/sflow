@@ -12,7 +12,7 @@ def _helper_img_decode(decoder, fname, shape=(None, None, None),
         fname = tf.train.string_input_producer(fname, shuffle=shuffle)
         imreader = tf.WholeFileReader()
         key, content = imreader.read(fname)
-    elif isinstance(fname, (str, basestring)):
+    elif isinstance(fname, str):
         content = tf.read_file(fname)
     elif isinstance(fname, tf.Tensor):
         if fname.ndim == 0:
@@ -80,7 +80,7 @@ def read_line(fname, up_to=None, shuffle=False):
     :param shuffle:
     :return:
     """
-    if isinstance(fname, (str, basestring, tf.Tensor)):
+    if isinstance(fname, (str, tf.Tensor)):
         fname = tf.train.string_input_producer([fname], shuffle=shuffle)
         # fname = tf.convert_to_tensor(fname, dtype=tf.string)
     reader = tf.TextLineReader()

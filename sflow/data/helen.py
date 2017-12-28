@@ -1,12 +1,21 @@
 # -*- coding: utf-8 -*-
+# data from
+# http://pages.cs.wisc.edu/~lizhang/projects/face-parsing/
+import sflow.tf as tf
+
 
 def datasetfolder():
     return tf.assets_folder('/face/helen/SmithCVPR2013_dataset_resized/')
 
 
-def _trainfile(folder=None):
+def _trainfile_old(folder=None):
     import os
     return os.path.join(folder or datasetfolder(), 'trainnames.txt')
+
+
+def _trainfile(folder=None):
+    import os
+    return os.path.join(folder or datasetfolder(), 'exemplars.txt')
 
 
 def _testfile(folder=None):
@@ -69,7 +78,7 @@ def feed_img_label(fid, size=(256, 256), shuffle=False, rotate=True, threads=6, 
     img = tf.feed.read_image(imgfile, channels=3)
 
     # preprocess
-    szbig = map(int, (256*1.5, 256*1.5))
+    szbig = list(map(int, (256*1.5, 256*1.5)))
 
     img = tf.img.pad_if_need(img, size=szbig)
     label = tf.img.pad_if_need(label, size=szbig)
@@ -93,7 +102,7 @@ def feed_img_label(fid, size=(256, 256), shuffle=False, rotate=True, threads=6, 
     return q
 
 
-def trainset(batch, size=(256, 256), threads=8, sizedown=None, removebg=False):
+def trainset_old(batch, size=(256, 256), threads=8, sizedown=None, removebg=False):
     import sflow.tf as tf
 
     # qtrain : from train
@@ -117,6 +126,38 @@ def trainset(batch, size=(256, 256), threads=8, sizedown=None, removebg=False):
             image = image * bg
 
     return tf.dic(image=image, label=label, batch=batch)
+
+
+def trainset(batch, size=(256, 256), threads=8, sizedown=None, removebg=False):
+    import sflow.tf as tf
+
+    # qtrain : from train
+    with tf.name_scope('helen_trainset'):
+        # fid = tf.feed.read_line(_trainfile(), shuffle=True)
+        line = tf.feed.read_line(_trainfile(), shuffle=True)
+        _, fid = tf.decode_csv(line, [[0], ['']], field_delim=',')
+        trimed = tf.string_split([fid], delimiter=' ')  # remove space
+        # now trimed.values[0] has fid
+        fid = trimed.values[0]  # ex) '100032540_1'
+
+        qtrain = feed_img_label(fid, size, shuffle=True, threads=threads)
+
+        image, label = qtrain.dequeue_many(batch)
+        image = image.to_float()/255.
+        image = tf.identity(image, name='image')
+        label = label.to_float()/255.
+
+        if sizedown is not None:
+            image = image.sizedown(sizedown)
+            label = label.sizedown(sizedown)
+        label = normalize_label(label)
+
+        if removebg is True:
+            # remove background image
+            bg = 1. - label[:, :, :, :1]
+            image = image * bg
+
+    return tf.dic(image=image, label=label)
 
 
 def testset(batch, size=(256, 256), threads=8, sizedown=None, removebg=False):
