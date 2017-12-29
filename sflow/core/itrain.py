@@ -174,7 +174,7 @@ def backup_train_script_to(savedir, depth=2):
         f.write(values)
 
 
-def trainall(outputs, savers=None, ep=None, maxep=None, epochper=10000, saveper=1):
+def trainall(outputs, savers=None, ep=None, maxep=None, epochper=10000, saveper=1, ep_restore=None, backup=True):
     """
     todo : add example
     :param outputs:
@@ -183,6 +183,7 @@ def trainall(outputs, savers=None, ep=None, maxep=None, epochper=10000, saveper=
     :param maxep:
     :param epochper:
     :param saveper:
+    :param ep_restore:
     :return:
     """
     # generator step training
@@ -201,9 +202,11 @@ def trainall(outputs, savers=None, ep=None, maxep=None, epochper=10000, saveper=
         savers = [savers]
 
     # leave backup script
-    backup_train_script_to(savers[0].savedir)
+    if backup:
+        backup_train_script_to(savers[0].savedir)
 
-    restore_or_initialize(savers)
+    restore_or_initialize(savers, ep=ep_restore)
+
     set_training(True)
     if not isinstance(outputs, (tuple, list)):
         outputs = [outputs]
