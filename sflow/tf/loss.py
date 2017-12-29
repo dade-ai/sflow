@@ -283,7 +283,7 @@ def softmax_cross_entropy(logits, labels, name=None):
     if logits.ndim == labels.ndim + 1:
         # assert labels is a kind of integer
         return tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=labels, name=name)
-    elif logits.ndim == labels.ndim and logits.ndim > 2:
+    elif logits.ndim == labels.ndim and logits.ndim >= 2:
         # # make ndim to 2
         # assert not [i for i, j in zip(logits.dims, labels.dims) if i != j]
         # dims = logits.dims
