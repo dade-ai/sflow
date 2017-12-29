@@ -4,6 +4,7 @@ from __future__ import print_function
 import tensorflow as tf
 
 from snipy.basic import (interrupt_guard)
+from snipy.io.fileutil import mkdir_if_not
 from . import logg
 from .icore import (default_session, get_global_step)
 
@@ -50,10 +51,10 @@ class _SaverWrap(object):
             pre = os.path.basename(folder)
         savepath = os.path.join(folder, pre)
         self._savepath = savepath
+
         self.savedir = folder
-        # self._savedir = os.path.dirname(savepath)
-        # = os.path.join(savepath, scope or 'ckpt')
-        # self._saveper = saveper
+        mkdir_if_not(folder, ispath=True)
+
         self._epochper = epochper
         self._saver = tf.train.Saver(var_list=var_list, **kwargs)
         self.var_list = var_list
@@ -87,6 +88,7 @@ class _SaverWrap(object):
         ep = ep or (gstep // self._epochper)
 
         sess = sess or default_session()
+
         return self._saver.save(sess, self._savepath,
                                 global_step=ep,
                                 write_meta_graph=False)

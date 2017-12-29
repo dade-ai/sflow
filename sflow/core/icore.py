@@ -407,7 +407,11 @@ def function(inputs, outputs, sess=None, preprocess=None, postprocess=None):
 
         feedvalues = preprocess(feedvalues)
 
-        assert len(feedvalues) == (narg or 1)
+        try:
+            assert len(feedvalues) == (narg or 1)
+        except AssertionError as e:
+            raise e
+
         feed_dict = kwargs.pop('feed_dict', dict())
         feed_dict.update(zip(inputs, feedvalues))
 
@@ -454,12 +458,17 @@ _placeholder = tf.placeholder
 
 
 def placeholder(shape=None, dtype=None, name=None):
-    if isinstance(shape, (tf.DType, str, basestring)):
-        # swap args
+    if isinstance(shape, (tf.DType, str)):
         return tf.placeholder(dtype=shape, shape=dtype, name=name)
-    else:
-        dtype = dtype or tf.float32
-        return tf.placeholder(dtype=dtype, shape=shape, name=name)
+    try:
+        if isinstance(shape, (tf.DType, basestring)):
+            # swap args
+            return tf.placeholder(dtype=shape, shape=dtype, name=name)
+    except NameError:
+        # error by basestring
+        pass
+    dtype = dtype or tf.float32
+    return tf.placeholder(dtype=dtype, shape=shape, name=name)
 
 
 # endregion
