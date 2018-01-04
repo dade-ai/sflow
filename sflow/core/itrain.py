@@ -59,6 +59,17 @@ class _SaverWrap(object):
         self._saver = tf.train.Saver(var_list=var_list, **kwargs)
         self.var_list = var_list
 
+    @property
+    def lastest_ep(self):
+        import re
+        lastfile = tf.train.latest_checkpoint(self.savedir)
+        if lastfile is None:
+            return None
+        else:
+            pattern = self._savepath + '-(\d*)'
+            ep = int(re.match(pattern, lastfile).group(1))
+        return ep
+
     def restore(self, sess=None, ep=None):
         from sflow.io.save_restore_util import restore_checkpoint
 
@@ -72,17 +83,21 @@ class _SaverWrap(object):
             # tf.global_variables_initializer().run()
             sess = sess or default_session()
 
-            # restore var_list without error though not found var exists
-            restore_checkpoint(lastfile, var_list=self.var_list, sess=sess)
-            # self._saver.restore(sess, lastfile)
+            try:
+                # restore var_list without error though not found var exists
+                restore_checkpoint(lastfile, var_list=self.var_list, sess=sess)
+                # self._saver.restore(sess, lastfile)
+                logg.info('restored from [{}]'.format(lastfile))
+            except Exception as e:
+                logg.warn(e)
+                return False
 
-            logg.info('restored from [{}]'.format(lastfile))
             return True
         else:
             logg.warn('No file to restore with path[{}]'.format(self.savedir))
         return False
 
-    def save(self, sess, ep=None, gstep=None):
+    def save(self, sess=None, ep=None, gstep=None):
         # todo : option of ignoring optimizer variables
         gstep = gstep or self._global_step.eval()
         ep = ep or (gstep // self._epochper)
@@ -174,7 +189,8 @@ def backup_train_script_to(savedir, depth=2):
         f.write(values)
 
 
-def trainall(outputs, savers=None, ep=None, maxep=None, epochper=10000, saveper=1, ep_restore=None, backup=True):
+def trainall(outputs, savers=None, ep=None, maxep=None, epochper=10000, saveper=1, ep_restore=None,
+             backup=True, save_meta=True):
     """
     todo : add example
     :param outputs:
@@ -206,6 +222,9 @@ def trainall(outputs, savers=None, ep=None, maxep=None, epochper=10000, saveper=
         backup_train_script_to(savers[0].savedir)
 
     restore_or_initialize(savers, ep=ep_restore)
+    if ep_restore is None:
+        # starting point
+        ep_restore = savers[0].latest_ep or 0
 
     set_training(True)
     if not isinstance(outputs, (tuple, list)):
@@ -215,22 +234,33 @@ def trainall(outputs, savers=None, ep=None, maxep=None, epochper=10000, saveper=
     init_operations().run()
 
     with feeding() as (sess, coord):
-        gstep = global_step.eval()
-        ep = gstep // epochper
+
+        gstep_start = global_step.eval()
+
+        # fixme
+        ep = ep_restore
         ep_p = ep
+
         if maxep is None:
             maxep = ep + (epcount or 10)
-        _save_metas(savers, sess)
+        if save_meta:
+            _save_metas(savers, sess)
+
         while not coord.should_stop() and ep < maxep:
             try:
                 outs = sess.run(runops)
                 losses = outs[:-2]
                 gstep = outs[-2]
 
-                ep = gstep // epochper
+                # fixme
+                # ep = gstep // epochper
+                ep = ep_restore + (gstep - gstep_start) // epochper
+
                 if saveper and ep_p < ep and ep % saveper == 0:
                     _save_weight(savers, sess, ep)
+
                 yield ep, gstep, losses
+
             except KeyboardInterrupt:
                 reraise = _save_or_not(savers, sess, ep)
                 if reraise:
@@ -275,15 +305,19 @@ def trainstep(ep=None, maxep=None, epochper=1, saveper=1, savers=None, ep_restor
         backup_train_script_to(savers[0].savedir)
 
     restore_or_initialize(savers, ep=ep_restore)
+    if ep_restore is None:
+        # starting point
+        ep_restore = savers[0].latest_ep or 0
+
     set_training(True)
 
     init_operations().run()
 
     # try:
     with feeding() as (sess, coord):
-        gstep = global_step.eval()
+        gstep_start = global_step.eval()
 
-        ep = gstep // epochper
+        ep = ep_restore  # gstep // epochper
         ep_p = ep
         if maxep is None:
             maxep = ep + (epcount or 10)
@@ -293,7 +327,7 @@ def trainstep(ep=None, maxep=None, epochper=1, saveper=1, savers=None, ep_restor
 
             try:
                 gstep = sess.run([igstep, global_step])[1]
-                ep = gstep // epochper
+                ep = ep_restore + (gstep - gstep_start) // epochper
 
                 if saveper and ep_p < ep and ep % saveper == 0:
                     _save_weight(savers, sess, ep)
@@ -315,7 +349,7 @@ def _save_metas(savers, sess):
     with interrupt_guard('saving.'):
         for s in savers:
             s.save_meta(sess=sess)
-            print(str(datetime.now()))
+            logg.info(str(datetime.now()))
 
 
 def _save_weight(savers, sess, ep):
@@ -326,7 +360,7 @@ def _save_weight(savers, sess, ep):
     with interrupt_guard('saving.'):
         for s in savers:
             s.save(sess=sess, ep=ep)
-            print(str(datetime.now()))
+            logg.info(str(datetime.now()))
 
 
 def save_on_interrupt(savers, sess, ep):

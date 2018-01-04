@@ -81,7 +81,7 @@ def flipud(*images):
     def _flipud(img):
         return tf.map_fn(tf.image.flip_up_down, img)
 
-    return _standize_output_res(map(_flipud, images))
+    return _standize_output_res(list(map(_flipud, images)))
 
 
 def rand_flipud(*imagez, **kwargs):
@@ -119,7 +119,7 @@ def fliplr(*images):
     def _fliplr(img):
         return tf.map_fn(tf.image.flip_left_right, img)
 
-    return _standize_output_res(map(_fliplr, images))
+    return _standize_output_res(list(map(_fliplr, images)))
 
 
 def rand_fliplr(*imagez, **kwargs):
@@ -179,7 +179,7 @@ def transpose_img(*images):
     def _transpose_img(img4d):
         return tf.map_fn(tf.image.transpose_image, img4d)
 
-    return _standize_output_res(map(_transpose_img, images))
+    return _standize_output_res(list(map(_transpose_img, images)))
 
 
 @tf.op_scope
@@ -199,12 +199,12 @@ def rot90(*imagez, **kwargs):
     """
     k = kwargs.pop('k', 1)
 
-    def _rot90_3r(x, k):
-        out = tf.image.rot90(x, k)
+    def _rot90_3r(x, k_):
+        out = tf.image.rot90(x, k_)
         dims = x.dims
-        if k == 1 or k == 3:
+        if k_ == 1 or k_ == 3:
             out.set_shape([dims[1], dims[0]] + dims[2:])
-        if k == 2:
+        if k_ == 2:
             out.set_shape(dims)
         return out
 
@@ -212,7 +212,7 @@ def rot90(*imagez, **kwargs):
     def _rot90(*imgs):
         for im in imgs:
             tf.assert_rank(im, 4)
-        return tuple(tf.map_fn(lambda x: _rot90_3r(x, k), img) for img in imgs)
+        return tuple(tf.map_fn(lambda x: _rot90_3r(x, k), im) for im in imgs)
 
     return _standize_output_fun_or_res(_rot90, *imagez)
 
