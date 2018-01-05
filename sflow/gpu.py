@@ -26,7 +26,7 @@ def visible_devices(devices):
         elif isinstance(devices, (tuple, list)):
             return ','.join(str(d) for d in devices)
         else:
-            assert isinstance(devices, (str, basestring))
+            assert isinstance(devices, str)
             if devices is 'cpu':
                 return '99'  # invalid gpu number makes all gpu invisible
             else:
