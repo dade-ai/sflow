@@ -116,8 +116,8 @@ def fliplr(*images):
     :return:
     """
     @tf.op_scope('fliplr')
-    def _fliplr(img):
-        return tf.map_fn(tf.image.flip_left_right, img)
+    def _fliplr(im):
+        return tf.map_fn(tf.image.flip_left_right, im)
 
     return _standize_output_res(list(map(_fliplr, images)))
 
