@@ -12,7 +12,9 @@ from .icore import (default_session, get_global_step)
 class _SaverWrap(object):
 
     def __init__(self, savepath, global_step=None, epochper=1,
-                 var_list=None, scope=None, keep_optim=False, **kwargs):
+                 var_list=None, scope=None, keep_optim=False,
+                 save_callback=None,
+                 **kwargs):
         """
         todo : add comment
         :param savepath:
@@ -58,6 +60,7 @@ class _SaverWrap(object):
         self._epochper = epochper
         self._saver = tf.train.Saver(var_list=var_list, **kwargs)
         self.var_list = var_list
+        self.save_callback = save_callback or (lambda x: x)
 
     @property
     def lastest_ep(self):
@@ -104,9 +107,9 @@ class _SaverWrap(object):
 
         sess = sess or default_session()
 
-        return self._saver.save(sess, self._savepath,
-                                global_step=ep,
-                                write_meta_graph=False)
+        res = self._saver.save(sess, self._savepath, global_step=ep, write_meta_graph=False)
+        self.save_callback(ep, gstep)
+        return res
 
     def save_meta(self, sess):
         sess = sess or default_session()
