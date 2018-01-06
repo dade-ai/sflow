@@ -157,12 +157,12 @@ def summary_writer(logdir=None, summaryop=None, **kwargs):
 
 
 def saver(savedir='train', global_step=None, epochper=1,
-          var_list=None, scope=None, keep_optim=False, **kwargs):
+          var_list=None, scope=None, keep_optim=False, save_callback=None, **kwargs):
     # todo add some comment
 
     return _SaverWrap(savepath=savedir, global_step=global_step,
                       epochper=epochper, var_list=var_list, scope=scope,
-                      keep_optim=keep_optim,
+                      keep_optim=keep_optim, save_callback=save_callback,
                       **kwargs)
 
 
