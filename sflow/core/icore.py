@@ -192,6 +192,7 @@ def session(graph=None, config=None):
     if config is None:
         config = tf.ConfigProto(allow_soft_placement=True)
         config.gpu_options.allow_growth = True
+        config.gpu_options.per_process_gpu_memory_fraction = 0.97
 
         # config = tf.ConfigProto(allow_soft_placement=False)
         # config.gpu_options.allocator_type = 'BFC'
