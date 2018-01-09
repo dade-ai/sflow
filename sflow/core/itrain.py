@@ -63,7 +63,7 @@ class _SaverWrap(object):
         self.save_callback = save_callback or (lambda x, y: (x, y))
 
     @property
-    def lastest_ep(self):
+    def latest_ep(self):
         import re
         lastfile = tf.train.latest_checkpoint(self.savedir)
         if lastfile is None:
@@ -327,7 +327,7 @@ def trainstep(ep=None, maxep=None, epochper=1, saveper=1, savers=None, ep_restor
             maxep = ep + (epcount or 10)
 
         while not coord.should_stop() and ep < maxep:
-            yield ep, gstep
+            yield ep, gstep_start
 
             try:
                 gstep = sess.run([igstep, global_step])[1]
