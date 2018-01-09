@@ -60,7 +60,7 @@ class _SaverWrap(object):
         self._epochper = epochper
         self._saver = tf.train.Saver(var_list=var_list, **kwargs)
         self.var_list = var_list
-        self.save_callback = save_callback or (lambda x: x)
+        self.save_callback = save_callback or (lambda x, y: (x, y))
 
     @property
     def lastest_ep(self):
@@ -108,7 +108,8 @@ class _SaverWrap(object):
         sess = sess or default_session()
 
         res = self._saver.save(sess, self._savepath, global_step=ep, write_meta_graph=False)
-        self.save_callback(ep, gstep)
+        if res:
+            self.save_callback(ep, gstep)
         return res
 
     def save_meta(self, sess):
