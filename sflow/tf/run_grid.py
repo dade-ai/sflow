@@ -28,7 +28,7 @@ def _iter_combination(args, kwargs):
 def _run_gpu(cuda, script, *args, **kwargs):
     import sys
 
-    params = ['--{}={}'.format(k, v) for k,v in kwargs.iteritems()]
+    params = ['--{}={}'.format(k, v) for k,v in kwargs.items()]
     cmd = 'python {} {} {} --cuda={} '.format(script, ' '.join(args), ' '.join(params), cuda)
 
     logg.info('cmd: [{}]'.format(cmd))
@@ -42,7 +42,7 @@ def _run_gpu(cuda, script, *args, **kwargs):
 def _run_gpu_test(cuda, script, *args, **kwargs):
     import sys
 
-    params = ['--{}={}'.format(k, v) for k,v in kwargs.iteritems()]
+    params = ['--{}={}'.format(k, v) for k,v in kwargs.items()]
     cmd = 'python {} {} {} --cuda={} '.format(script, ' '.join(args), ' '.join(params), cuda)
 
     logg.info('cmd: [{}]'.format(cmd))
@@ -115,9 +115,9 @@ def run_grid(script, *args, **kwargs):
     logg.info('flag.cuda: {}'.format(flag.cuda))
     # flag.cuda = kwargs.pop('cuda', None)
 
-    args = map(_try_as_list, args)
+    args = list(map(_try_as_list, args))
     logg.info('args== {}'.format(str(args)))
-    kwargs = {k: _try_as_list(v) for k, v in kwargs.iteritems()}
+    kwargs = {k: _try_as_list(v) for k, v in kwargs.items()}
 
     # all parameter combinations
     jobq = iqueue(_iter_combination(args, kwargs))

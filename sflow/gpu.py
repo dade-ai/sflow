@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # CUDA_VISIBLE_DEVICE
-
 from __future__ import absolute_import
+import os
 
 
 def visible_devices(devices):
@@ -18,20 +18,19 @@ def visible_devices(devices):
     :param devices: int | str | list(int), cpu, gpu0, ... 1,2,3 or
     :return: None
     """
-    import os
 
-    def _format():
-        if isinstance(devices, int):
-            return str(devices)
-        elif isinstance(devices, (tuple, list)):
-            return ','.join(str(d) for d in devices)
+    def _format(devices_):
+        if isinstance(devices_, int):
+            return str(devices_)
+        elif isinstance(devices_, (tuple, list)):
+            return ','.join(str(d) for d in devices_)
         else:
-            assert isinstance(devices, str)
-            if devices is 'cpu':
+            assert isinstance(devices_, str)
+            if devices_ is 'cpu':
                 return '99'  # invalid gpu number makes all gpu invisible
             else:
-                return devices
+                return devices_
 
-    os.environ['CUDA_VISIBLE_DEVICES'] = _format()
+    os.environ['CUDA_VISIBLE_DEVICES'] = _format(devices)
     print('CUDA_VISIBLE_DEVICES={0}'.format(os.environ['CUDA_VISIBLE_DEVICES']))
 
