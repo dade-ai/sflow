@@ -44,11 +44,12 @@ def load_checkpoint(fpattern):
     return d
 
 
-def convert_checkpoint(inpath, savepath, name_map, scope=None):
+def convert_checkpoint(inpath, savepath, name_map, relative_path=True, scope=None):
     """
     change variables mapping
     :param inpath: checkpoint input file
     :param savepath: output file
+    :param relative_path:
     :param name_map: {oldname_or_var: newname_or_var} | newname = fn(oldname) | [[oldvar][newvar]]
     :param scope: the name of root scope. for `import_meta_graph` and `restore pattern`
     :return: outputpath, saver
@@ -83,7 +84,7 @@ def convert_checkpoint(inpath, savepath, name_map, scope=None):
 
         tf.global_variables_initializer().run()
 
-        saver = tf.train.Saver(var_list=vars)
+        saver = tf.train.Saver(var_list=vars, save_relative_paths=relative_path)
         fpath = saver.save(g.session, savepath, write_meta_graph=False)
 
         tf.logg.info('checkpoint converted, {}->{}'.format(inpath, savepath))

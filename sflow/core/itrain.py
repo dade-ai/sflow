@@ -4,7 +4,7 @@ from __future__ import print_function
 import tensorflow as tf
 
 from snipy.basic import (interrupt_guard)
-from snipy.io.fileutil import mkdir_if_not
+from snipy.io.fileutil import (mkdir_if_not, latest_file)
 from . import logg
 from .icore import (default_session, get_global_step)
 
@@ -13,10 +13,12 @@ class _SaverWrap(object):
 
     def __init__(self, savepath, global_step=None, epochper=1,
                  var_list=None, scope=None, keep_optim=False,
+                 relative_path=True,
                  save_callback=None,
+                 version=2,
                  **kwargs):
         """
-        todo : add comment
+        savepath 포맷 blabla.ep[NUM]-gstep
         :param savepath:
         :param global_step:
         :param epochper:
@@ -25,7 +27,8 @@ class _SaverWrap(object):
         :param kwargs:
         """
         import os
-
+        assert epochper != 1, 'check epochper value {}'.format(epochper)
+        self._version = version
         self._global_step = global_step if global_step is not None else get_global_step()
         if scope is not None:
             if var_list is not None:
@@ -58,7 +61,8 @@ class _SaverWrap(object):
         mkdir_if_not(folder, ispath=True)
 
         self._epochper = epochper
-        self._saver = tf.train.Saver(var_list=var_list, **kwargs)
+        self._saver = tf.train.Saver(var_list=var_list, save_relative_paths=relative_path,
+                                     **kwargs)
         self.var_list = var_list
         self.save_callback = save_callback or (lambda x, y: (x, y))
 
@@ -69,8 +73,15 @@ class _SaverWrap(object):
         if lastfile is None:
             return None
         else:
-            pattern = self._savepath + '-(\d*)'
-            ep = int(re.match(pattern, lastfile).group(1))
+            if self._version == 1:
+                pattern = self._savepath + '-(\d*)'
+                ep = int(re.match(pattern, lastfile).group(1))
+            elif self._version == 2:
+                # todo
+                pattern = self._savepath + '.ep(\d*)'
+                ep = int(re.match(pattern, lastfile).group(1))
+            else:
+                raise ValueError('check version for filename convention')
         return ep
 
     def restore(self, sess=None, ep=None):
@@ -78,7 +89,13 @@ class _SaverWrap(object):
 
         # restore or not
         if ep is not None:
-            lastfile = self._savepath + '-{:d}'.format(ep)
+            # fixme
+            if self._version == 1:
+                lastfile = self._savepath + '-{:d}'.format(ep)
+            elif self._version == 2:
+                pattern = self._savepath + '.ep{:d}-*.index'.format(ep)
+                lastfile = latest_file(pattern)
+                lastfile = lastfile[:-6]  # remove '.index'
         else:
             lastfile = tf.train.latest_checkpoint(self.savedir)
 
@@ -100,22 +117,29 @@ class _SaverWrap(object):
             logg.warn('No file to restore with path[{}]'.format(self.savedir))
         return False
 
-    def save(self, sess=None, ep=None, gstep=None):
+    def save(self, sess=None, ep=None, gstep=None, write_meta_graph=False):
         # todo : option of ignoring optimizer variables
         gstep = gstep or self._global_step.eval()
         ep = ep or (gstep // self._epochper)
 
         sess = sess or default_session()
 
-        res = self._saver.save(sess, self._savepath, global_step=ep, write_meta_graph=False)
+        if self._version == 1:
+            res = self._saver.save(sess, self._savepath, global_step=ep, write_meta_graph=write_meta_graph)
+        elif self._version == 2:
+            # fixme
+            savepath = '{}.ep{}'.format(self._savepath, ep)
+            res = self._saver.save(sess, savepath, global_step=gstep, write_meta_graph=write_meta_graph)
+        else:
+            raise ValueError('check version for filename convention')
+
         if res:
             self.save_callback(ep, gstep)
+
         return res
 
-    def save_meta(self, sess):
-        sess = sess or default_session()
-        return self._saver.save(sess, save_path=self._savepath, global_step=self._global_step,
-                                write_meta_graph=True)
+    def save_meta(self, sess=None):
+        return self.save(sess=sess, write_meta_graph=True)
 
 
 class _SummaryWriter(object):

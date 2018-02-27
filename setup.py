@@ -15,7 +15,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 
 setup(name='sflow',
-      version='1.4.0',
+      version='1.5.0',
       description='super slim and simple syntatic sugar for Tensorflow',
       long_description='텐서플로우 개취 탑재',
 
