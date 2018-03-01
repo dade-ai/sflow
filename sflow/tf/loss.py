@@ -147,7 +147,7 @@ def hinge_multiclass_margin(logits, itarget, axis=-1):
     incorrect = 1. - correct
 
     # dim-reduced correct scores only
-    correct_score = (correct * logits).sum(axis=axis, keep_dims=True)
+    correct_score = (correct * logits).sum(axis=axis, keepdims=True)
     # manual broadcasting
     correct_score = correct_score.repeat(depth, axis=axis)
 
@@ -237,8 +237,8 @@ def binary_cross_entropy(logits, target, axis=-1, name=None):
 @tf.op_scope
 def softmax(t, axis=-1, name=None):
     """ softmax with multi dimension """
-    t = tf.exp(t - t.max(axis=axis, keep_dims=True))
-    s = t.sum(axis=axis, keep_dims=True)
+    t = tf.exp(t - t.max(axis=axis, keepdims=True))
+    s = t.sum(axis=axis, keepdims=True)
     return tf.divide(t, s, name=name)
 
 
@@ -246,8 +246,8 @@ def softmax(t, axis=-1, name=None):
 def hardmax(t, axis=-1, scale=100., name=None):
     """ softmax with multi dimension """
     t *= scale
-    t = tf.exp(t - t.max(axis=axis, keep_dims=True))
-    s = t.sum(axis=axis, keep_dims=True)
+    t = tf.exp(t - t.max(axis=axis, keepdims=True))
+    s = t.sum(axis=axis, keepdims=True)
     return tf.divide(t, s, name=name)
 
 
@@ -322,7 +322,7 @@ def sparsemax(logits, axis=-1, name=None):
     obs = tf.shape(logits)[0]
 
     # sort z
-    z = logits - tf.mean(logits, axis=1, keep_dims=True)
+    z = logits - tf.mean(logits, axis=1, keepdims=True)
     z_sorted = tf.sort(z)
 
     # calculate k(z)
@@ -353,7 +353,7 @@ def sparsemax_loss(logits, sparsemax, labels, axis=-1, name=None):
     # https://github.com/tensorflow/tensorflow/blob/r1.1/tensorflow/contrib/sparsemax/python/ops/sparsemax_loss.py
     # cf) tf.contrib.sparsemax.sparsemax_loss(logits, sparsemax, labels, name=name)
 
-    shifted_logits = logits - tf.mean(logits, axis=axis, keep_dims=True)
+    shifted_logits = logits - tf.mean(logits, axis=axis, keepdims=True)
     # sum over support
     support = tf.cast(sparsemax > 0, sparsemax.dtype)
     sum_s = support * sparsemax * (shifted_logits - 0.5 * sparsemax)
@@ -393,13 +393,13 @@ def top1(logits, target, name=None):
 # region distance
 
 @tf.op_scope
-def l2(x, y=None, axis=None, keep_dims=False, name=None):
+def l2(x, y=None, axis=None, keepdims=False, name=None):
     """
     sum((x - y)^2) or sum(x^2)
     :param x:
     :param y: None | Tensor
     :param axis:
-    :param keep_dims:
+    :param keepdims:
     :param name:
     :return:
     """
@@ -408,18 +408,18 @@ def l2(x, y=None, axis=None, keep_dims=False, name=None):
     else:
         d = x - y
 
-    s = tf.reduce_sum(tf.square(d), axis=axis, keep_dims=keep_dims, name=name)
+    s = tf.reduce_sum(tf.square(d), axis=axis, keepdims=keepdims, name=name)
     return s
 
 
 @tf.op_scope
-def l2mean(x, y=None, axis=None, keep_dims=False, name=None):
+def l2mean(x, y=None, axis=None, keepdims=False, name=None):
     """
     sum((x - y)^2) or sum(x^2)
     :param x:
     :param y: None | Tensor
     :param axis:
-    :param keep_dims:
+    :param keepdims:
     :param name:
     :return:
     """
@@ -428,18 +428,18 @@ def l2mean(x, y=None, axis=None, keep_dims=False, name=None):
     else:
         d = x - y
 
-    s = tf.reduce_mean(tf.square(d), axis=axis, keep_dims=keep_dims, name=name)
+    s = tf.reduce_mean(tf.square(d), axis=axis, keepdims=keepdims, name=name)
     return s
 
 
 @tf.op_scope
-def l1(x, y=None, axis=None, keep_dims=False, name=None):
+def l1(x, y=None, axis=None, keepdims=False, name=None):
     """
     sum(abs(x - y)) or sum(abs(x))
     :param x:
     :param y: None | Tensor
     :param axis:
-    :param keep_dims:
+    :param keepdims:
     :param name:
     :return:
     """
@@ -448,7 +448,7 @@ def l1(x, y=None, axis=None, keep_dims=False, name=None):
     else:
         d = x - y
 
-    s = tf.reduce_sum(tf.abs(d), axis=axis, keep_dims=keep_dims, name=name)
+    s = tf.reduce_sum(tf.abs(d), axis=axis, keepdims=keepdims, name=name)
     return s
 
 # endregion

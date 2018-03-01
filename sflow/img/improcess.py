@@ -300,7 +300,7 @@ def sketch(x, threshold=None, digitize=False, invert=True, gaussian=True, gwindo
 
     x = sobel(x) / 4.  # normalize
     if not keep_channel:
-        x = x.mean(axis=3, keep_dims=True)
+        x = x.mean(axis=3, keepdims=True)
     if digitize:
         x = tf.cast(x >= (threshold or 0.5), dtype=x.dtype)
     if threshold is not None:

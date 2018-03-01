@@ -163,34 +163,34 @@ def dot(x, y, **kwargs):
 
 @patchmethod(tf.Tensor, tf.Variable)
 @op_scope
-def std(x, axis=None, keep_dims=False, name=None):
+def std(x, axis=None, keepdims=False, name=None):
     if x.dtype.base_dtype == tf.bool:
         x = tf.cast(x, const.floatx)
     # in first, keep_dims = True
-    m = tf.reduce_mean(x, axis=axis, keep_dims=True)
+    m = tf.reduce_mean(x, axis=axis, keepdims=True)
     devs_squared = tf.square(x - m)
-    return tf.sqrt(tf.reduce_mean(devs_squared, axis=axis, keep_dims=keep_dims), name=name)
+    return tf.sqrt(tf.reduce_mean(devs_squared, axis=axis, keepdims=keepdims), name=name)
 
 
 @patchmethod(tf.Tensor, tf.Variable)
 @op_scope
-def var(x, axis=None, keep_dims=False, name=None):
+def var(x, axis=None, keepdims=False, name=None):
     if x.dtype.base_dtype == tf.bool:
         x = tf.cast(x, const.floatx)
     # in first, keep_dims = True
-    m = tf.reduce_mean(x, axis=axis, keep_dims=True)
+    m = tf.reduce_mean(x, axis=axis, keepdims=True)
     devs_squared = tf.square(x - m)
-    return tf.reduce_mean(devs_squared, axis=axis, keep_dims=keep_dims, name=name)
+    return tf.reduce_mean(devs_squared, axis=axis, keepdims=keepdims, name=name)
 
 
 @patchmethod(tf.Tensor, tf.Variable)
-def reduce_any(x, axis=None, keep_dims=False, name=None):
-    return tf.reduce_any(x.cast(tf.bool), axis=axis, keep_dims=keep_dims, name=name)
+def reduce_any(x, axis=None, keepdims=False, name=None):
+    return tf.reduce_any(x.cast(tf.bool), axis=axis, keepdims=keepdims, name=name)
 
 
 @patchmethod(tf.Tensor, tf.Variable)
-def reduce_all(x, axis=None, keep_dims=False, name=None):
-    return tf.reduce_all(x.cast(tf.bool), axis=axis, keep_dims=keep_dims, name=name)
+def reduce_all(x, axis=None, keepdims=False, name=None):
+    return tf.reduce_all(x.cast(tf.bool), axis=axis, keepdims=keepdims, name=name)
 
 
 @patchmethod(tf.Tensor, tf.Variable)

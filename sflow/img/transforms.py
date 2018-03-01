@@ -206,7 +206,7 @@ def sampling_xy(img, xys, outsize=None, oob=None):
     Yi = Ys.clip_by_value(0, H - 1)
 
     inb = tf.logical_and(Xi.equal(Xs), Yi.equal(Ys))  # [2, p]
-    inb = tf.reduce_any(inb, axis=0, keep_dims=True)   # all oob? [1, p]-
+    inb = tf.reduce_any(inb, axis=0, keepdims=True)   # all oob? [1, p]-
     inb = inb.expand_dims(2).to_float()
 
     # get 4 pixels  [B, p, C]
@@ -283,7 +283,7 @@ def sampling_xy_3r(img, xys, outsize=None, oob=None):
     Yi = Ys.clip_by_value(0, H - 1)
 
     inb = tf.logical_and(Xi.equal(Xs), Yi.equal(Ys))  # [2, p]
-    inb = tf.reduce_any(inb, axis=0, keep_dims=True)   # all oob? [1, p]-
+    inb = tf.reduce_any(inb, axis=0, keepdims=True)   # all oob? [1, p]-
     # inb = inb.expand_dims(2).to_float()  # [1, p]
     inb = inb.reshape((-1, 1)).to_float()  # [p, 1] 1 for channel
 

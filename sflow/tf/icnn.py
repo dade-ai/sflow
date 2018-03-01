@@ -635,16 +635,16 @@ def avgpool(x, kernel, stride, padding='SAME'):
 
 
 @layer
-def gpool(x, keep_dims=True):
+def gpool(x, keepdims=True):
     """
     global_avgpool
     :param x:
-    :param keep_dims:
+    :param keepdims:
     :return:
     """
     # http://arxiv.org/pdf/1312.4400.pdf
     axis = list(range(1, x.ndim-1))
-    return x.mean(axis=axis, keep_dims=keep_dims)
+    return x.mean(axis=axis, keepdims=keepdims)
 
 
 # endregion

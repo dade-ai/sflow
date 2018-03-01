@@ -254,12 +254,12 @@ def ssim_global(x, y, k1=0.01, k2=0.03, l=1.):
     c1 = (k1 * l) ** 2
     c2 = (k2 * l) ** 2
 
-    mx = x.mean(axis=reduction_indices, keep_dims=True)
-    my = y.mean(axis=reduction_indices, keep_dims=True)
-    sx = x.std(axis=reduction_indices, keep_dims=True)
-    sy = y.std(axis=reduction_indices, keep_dims=True)
+    mx = x.mean(axis=reduction_indices, keepdims=True)
+    my = y.mean(axis=reduction_indices, keepdims=True)
+    sx = x.std(axis=reduction_indices, keepdims=True)
+    sy = y.std(axis=reduction_indices, keepdims=True)
     xy = (x - mx) * (y - my)
-    sxy = xy.mean(axis=reduction_indices, keep_dims=True)
+    sxy = xy.mean(axis=reduction_indices, keepdims=True)
 
     # l(p) : luminace part
     similarity = (2. * mx * my + c1) / (mx.square() + my.square() + c1)

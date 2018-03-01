@@ -100,7 +100,7 @@ def composite(images, order=None, **whileopt):
         images = tf.stack(images)
 
     def step(bg, fg):
-        transparent = tf.equal(fg, 0.).all(axis=-1, keep_dims=True)
+        transparent = tf.equal(fg, 0.).all(axis=-1, keepdims=True)
         res = tf.select(transparent, bg, fg)
         return res
 

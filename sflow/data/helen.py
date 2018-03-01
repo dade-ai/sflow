@@ -48,13 +48,13 @@ def read_label(fid, folder=None):
 def normalize_label(label, name=None):
     import sflow.tf as tf
     dims = label.dims
-    s = label.sum(axis=-1, keep_dims=True)
+    s = label.sum(axis=-1, keepdims=True)
     dims[-1] -= 1
     bg = tf.concat(-1, [s.equal(0.), tf.zeros(dims, dtype=tf.bool)])
     label = tf.where(bg, tf.ones(label.dims), label)
 
     # label[:,:,:,0] = tf.where(s.equal(0.), tf.ones(dims), label[:,:,:,0])
-    s = label.sum(axis=-1, keep_dims=True)
+    s = label.sum(axis=-1, keepdims=True)
     label = label / s
 
     return tf.identity(label, name=name or 'label')

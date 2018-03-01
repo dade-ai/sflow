@@ -89,9 +89,9 @@ def dice_loss(pred, target, axis=None):
 @tf.op_scope
 def log_dice_coeff(pred, target, axis=(1, 2), eps=1e-8):
 
-    ps = pred.sum(axis=axis, keep_dims=False)
-    ts = target.sum(axis=axis, keep_dims=False)
-    intersect = tf.sum(pred * target, axis=axis, keep_dims=False)
+    ps = pred.sum(axis=axis, keepdims=False)
+    ts = target.sum(axis=axis, keepdims=False)
+    intersect = tf.sum(pred * target, axis=axis, keepdims=False)
 
     return 2. * tf.log(intersect + eps) - tf.log(ps + ts + eps)
 
