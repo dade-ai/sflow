@@ -80,29 +80,39 @@ def astype(x, dtype, name=None):
     return tf.cast(x, dtype, name=name)
 
 
+def _reduce_helper(reduce_fun, *args, **kwargs):
+    try:
+        return reduce_fun(*args, **kwargs)
+    except TypeError:
+        if 'keepdims' in kwargs:
+            kwargs['keep_dims'] = kwargs['keepdims']
+            del kwargs['keepdims']
+            return reduce_fun(*args, **kwargs)
+
+
 @patchmethod(tf.Tensor, tf.Variable)
 def sum(x, **kwargs):
-    return tf.reduce_sum(x, **kwargs)
+    return _reduce_helper(tf.reduce_sum, x, **kwargs)
 
 
 @patchmethod(tf.Tensor, tf.Variable)
 def mean(x, **kwargs):
-    return tf.reduce_mean(x, **kwargs)
+    return _reduce_helper(tf.reduce_mean, x, **kwargs)
 
 
 @patchmethod(tf.Tensor, tf.Variable)
 def prod(x, **kwargs):
-    return tf.reduce_prod(x, **kwargs)
+    return _reduce_helper(tf.reduce_prod, x, **kwargs)
 
 
 @patchmethod(tf.Tensor, tf.Variable)
 def max(x, **kwargs):
-    return tf.reduce_max(x, **kwargs)
+    return _reduce_helper(tf.reduce_max, x, **kwargs)
 
 
 @patchmethod(tf.Tensor, tf.Variable)
 def min(x, **kwargs):
-    return tf.reduce_min(x, **kwargs)
+    return _reduce_helper(tf.reduce_min, x, **kwargs)
 
 
 @patchproperty(tf.Tensor, tf.Variable)

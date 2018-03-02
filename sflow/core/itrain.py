@@ -27,7 +27,10 @@ class _SaverWrap(object):
         :param kwargs:
         """
         import os
-        assert epochper != 1, 'check epochper value {}'.format(epochper)
+
+        if epochper == 1:
+            logg.warn('check epochper value {}'.format(epochper))
+
         self._version = version
         self._global_step = global_step if global_step is not None else get_global_step()
         if scope is not None:
