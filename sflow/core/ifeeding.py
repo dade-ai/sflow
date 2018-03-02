@@ -40,11 +40,17 @@ def feeding(sess=None, coord=None):
 
 
 def feeds(data):
+    from .logg import logg
+    logg.warn('tf.feeds is deprecated, use tf.evals')
+    return evals(data)
+
+
+def evals(data):
     """
-    feed the evaluated data
+    iterate evaluated data with feeding
 
     example::
-        for d in tf.feeds(data):
+        for d in tf.evals(tensor):
             print(d)
 
     :param tf.Tensor|tf.Dic|list data:
@@ -53,4 +59,3 @@ def feeds(data):
     with feeding() as (sess, coord):
         while not coord.should_stop():
             yield sess.run(data)
-
