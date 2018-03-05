@@ -195,12 +195,12 @@ def var(x, axis=None, keepdims=False, name=None):
 
 @patchmethod(tf.Tensor, tf.Variable)
 def reduce_any(x, axis=None, keepdims=False, name=None):
-    return tf.reduce_any(x.cast(tf.bool), axis=axis, keepdims=keepdims, name=name)
+    return _reduce_helper(tf.reduce_any, x.cast(tf.bool), axis=axis, keepdims=keepdims, name=name)
 
 
 @patchmethod(tf.Tensor, tf.Variable)
 def reduce_all(x, axis=None, keepdims=False, name=None):
-    return tf.reduce_all(x.cast(tf.bool), axis=axis, keepdims=keepdims, name=name)
+    return _reduce_helper(tf.reduce_all, x.cast(tf.bool), axis=axis, keepdims=keepdims, name=name)
 
 
 @patchmethod(tf.Tensor, tf.Variable)
