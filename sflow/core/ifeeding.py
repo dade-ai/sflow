@@ -5,13 +5,14 @@ import tensorflow as tf
 
 @contextmanager
 def feeding(sess=None, coord=None):
-    from .icore import default_session
     """
 
     :param coord: tf.train.Coordinator
     :param sess: tf.Session
     :return: coordinator
     """
+    from .icore import default_session
+    from .logg import logg
 
     # default session
     sess = sess or default_session()
@@ -27,9 +28,9 @@ def feeding(sess=None, coord=None):
         yield sess, coord
 
     except tf.errors.OutOfRangeError:
-        print('feeding done')
+        logg.info('feeding done')
     except tf.errors.CancelledError:
-        print('feeding canceled')
+        logg.warn('feeding canceled')
     finally:
         # stop queue thread
         coord.request_stop()
