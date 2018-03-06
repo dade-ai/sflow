@@ -42,6 +42,8 @@ def gen_producer(placeholders, gen, capacity, min_after_dequeue=0,
     :param enqueue_many:
     :return:
     """
+    from ..core.logg import logg
+
     if not isinstance(placeholders, (tuple, list)):
         placeholders = [placeholders]
 
@@ -63,7 +65,7 @@ def gen_producer(placeholders, gen, capacity, min_after_dequeue=0,
     # feeddic = {n: p for n, p in zip(names, placeholders)}
 
     names = [p.name for p in placeholders]
-    print(names)
+    logg.info(str(names))
 
     if enqueue_many:
         enq = q.enqueue_many(placeholders)
