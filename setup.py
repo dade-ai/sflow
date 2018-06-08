@@ -15,7 +15,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 
 setup(name='sflow',
-      version='1.5.1.1',
+      version='1.8.0.1',
       description='super slim and simple syntatic sugar for Tensorflow',
       long_description='텐서플로우 개취 탑재',
 
@@ -49,6 +49,5 @@ setup(name='sflow',
 
       packages=find_packages(),
       install_requires=[
-          'tensorflow==1.5',
           'snipy'
       ])

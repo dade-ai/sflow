@@ -1,9 +1,11 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import
-from tensorflow import *
 import tensorflow as tf
 
-__version__ = '1.2.1'
+g = globals()
+for k, v in tf.__dict__.items():
+    if k not in g and not k.startswith('__'):
+        g[k] = v
+
+# __version__ = '1.2.1'
 
 try:
     # noinspection PyUnresolvedReferences
@@ -16,6 +18,7 @@ try:
     # __compiler_version__ = tf.__compiler_version__
 except AttributeError:
     pass
+
 from . import logg
 
 from .iconst import *
@@ -41,4 +44,6 @@ from .iextra import *
 
 from . import optim
 from . import decay
+
+__all__ = list(g.keys())
 

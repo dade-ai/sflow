@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
+# from __future__ import absolute_import
 from contextlib import contextmanager
 import collections
 import tensorflow as tf
@@ -192,7 +192,7 @@ def session(graph=None, config=None):
     if config is None:
         config = tf.ConfigProto(allow_soft_placement=True)
         config.gpu_options.allow_growth = True
-        config.gpu_options.per_process_gpu_memory_fraction = 0.97
+        config.gpu_options.per_process_gpu_memory_fraction = 0.7
 
         # config = tf.ConfigProto(allow_soft_placement=False)
         # config.gpu_options.allocator_type = 'BFC'

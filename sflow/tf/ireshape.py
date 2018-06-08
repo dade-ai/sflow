@@ -194,7 +194,7 @@ def channel_to_space(x, r):
     """
     batch, H, W, C = x.dims
     assert C % (r**2) == 0
-    c = C / (r * r)  # result channel
+    c = C // (r * r)  # result channel
 
     x = x.reshape(batch, H, W, c, r, r)
     x = x.transpose(0, 1,4, 2,5, 3)
@@ -216,8 +216,8 @@ def space_to_channel(x, r):
     assert H % r == 0 and W % r == 0
 
     C = c * r * r
-    h = H / r
-    w = W / r
+    h = H // r
+    w = W // r
     x = x.reshape(batch, h, r, w, r, c)
     x = x.transpose(0, 1, 3, 5,2,4)
     x = x.reshape(batch, h, w, C)

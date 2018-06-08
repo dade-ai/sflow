@@ -408,7 +408,13 @@ def l2(x, y=None, axis=None, keepdims=False, name=None):
     else:
         d = x - y
 
-    s = tf.reduce_sum(tf.square(d), axis=axis, keepdims=keepdims, name=name)
+    s = tf.square(d).sum(axis=axis, keep_dims=keepdims, name=name)
+
+    # try:
+    #     s = tf.reduce_sum(tf.square(d), axis=axis, keepdims=keepdims, name=name)
+    # except TypeError as e:
+    #     s = tf.reduce_sum(tf.square(d), axis=axis, keep_dims=keepdims, name=name)
+
     return s
 
 

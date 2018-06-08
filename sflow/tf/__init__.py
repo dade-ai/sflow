@@ -20,7 +20,6 @@ if not help_flag:
 
 # endregion
 
-from ..core import *
 # from sflow.core import *
 # from sflow.core import (_)
 from .icnn import *
@@ -40,3 +39,6 @@ from . import cmap
 
 from .run_grid import run_grid
 # import run_grid
+
+from ..core import *
+
