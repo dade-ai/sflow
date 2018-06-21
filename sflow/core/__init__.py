@@ -2,7 +2,7 @@ import tensorflow as tf
 
 g = globals()
 for k, v in tf.__dict__.items():
-    if k not in g and not k.startswith('__'):
+    if k not in g:
         g[k] = v
 
 # __version__ = '1.2.1'

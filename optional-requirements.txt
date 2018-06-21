@@ -1,5 +1,4 @@
 # optional requirements
-
 numpy
 matplotlib
 skimage

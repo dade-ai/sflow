@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from six import wraps
+from functools import wraps
 import numpy as np
 # sample images with BHWC float32 for test purpose tensor
 
