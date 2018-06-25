@@ -170,9 +170,6 @@ class _SummaryWriter(object):
             else:
                 summary = sess.run(self.summaryop)
 
-        print('[{}]'.format(self.logdir)),
-        print('summary', end='')
-
         if isinstance(summary, (tuple, list)):
             [self._writer.add_summary(s, global_step=gstep) for s in summary]
         else:
