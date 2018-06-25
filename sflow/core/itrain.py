@@ -220,7 +220,7 @@ def backup_train_script_to(savedir, depth=2):
         f.write(values)
 
 
-def trainall(outputs, savers=None, ep=None, maxep=None, epochper=10000, saveper=1, ep_restore=None,
+def trainall(outputs, savers=None, ep=None, maxep=None, epochper=1, saveper=1, ep_restore=None,
              backup=True, save_meta=True):
     """
     todo : add example
