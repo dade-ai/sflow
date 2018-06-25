@@ -82,7 +82,10 @@ class _SaverWrap(object):
             elif self._version == 2:
                 # todo
                 pattern = self._savepath + '.ep(\d*)'
-                ep = int(re.match(pattern, lastfile).group(1))
+                remat = re.match(pattern, lastfile)
+                if remat is None:
+                    return None
+                ep = int(remat.group(1))
             else:
                 raise ValueError('check version for filename convention')
         return ep
@@ -242,6 +245,8 @@ def trainall(outputs, savers=None, ep=None, maxep=None, epochper=10000, saveper=
 
     if savers is None:
         savers = [saver(epochper=epochper)]
+    elif epochper <= 1:
+        epochper = savers._epochper
     if not isinstance(savers, (tuple, list)):
         savers = [savers]
 
