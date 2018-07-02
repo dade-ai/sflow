@@ -234,9 +234,9 @@ def argmin(x, axis=-1, name=None):
 
 def concat(dim, tensors, name=None):
     try:
-        return tf.concat_v2(values=tensors, axis=dim, name=name)
-    except AttributeError:
         return tf.concat(values=tensors, axis=dim, name=name)
+    except AttributeError:
+        return tf.concat_v2(values=tensors, axis=dim, name=name)
 
 
 @patchmethod(tf.Tensor, tf.Variable)

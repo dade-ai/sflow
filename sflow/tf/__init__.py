@@ -25,6 +25,7 @@ if not help_flag:
 from .icnn import *
 from .ireshape import *
 from .loss import *
+from .loss2 import *
 from .measure import *
 
 # from .train import *
