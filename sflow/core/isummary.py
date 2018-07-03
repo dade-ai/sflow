@@ -25,7 +25,7 @@ def summary_loss(tensor, name=None, collections=None, family=None):
 
 def summary_learning_rate(tensor, name=None, collections=None, family=None):
     # defaults
-    name = 'learning_rate/' + (name or tensor.name)
+    name = 'learning_rate/' + (name or tensor.name.replace(':', '_'))
     tf.summary.scalar(name, tensor, collections=collections, family=family)
 
     return tensor
