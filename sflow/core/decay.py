@@ -32,7 +32,7 @@ def piecewise(boundaries, lr=None, name=None):
 
 def linear(decay_steps, lr_end=0.0001,
            cycle=False, lr=None, name=None):
-    return polynomial(decay_steps, end_learning_rate=lr_end,
+    return polynomial(decay_steps, lr_end=lr_end,
                       cycle=cycle, lr=lr, name=name, power=1.0)
 
 
