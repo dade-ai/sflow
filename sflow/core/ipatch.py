@@ -676,8 +676,8 @@ def insert_zero(x, rep, axis=-1, index_after=True, name=None):
     return concat(axis, list(ordered), name=name)
 
 
-@patchmethod(tf.Tensor, tf.Variable)
-def printn(x, first_n=10, message=None, name=None):
+@patchmethod(tf.Tensor, tf.Variable, name='print')
+def printn(x, message=None, first_n=10, name=None):
     return tf.Print(x, [x], message or x.name, first_n=first_n, name=name)
 
 

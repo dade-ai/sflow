@@ -82,6 +82,7 @@ def get_graph_seed(g=None):
     :param g:
     :return:
     """
+    # fixme
     g = g or tf.get_default_graph()
     if g._seed is None:
         g._seed = 1004
@@ -192,7 +193,7 @@ def session(graph=None, config=None):
     if config is None:
         config = tf.ConfigProto(allow_soft_placement=True)
         config.gpu_options.allow_growth = True
-        config.gpu_options.per_process_gpu_memory_fraction = 0.9
+        config.gpu_options.per_process_gpu_memory_fraction = 0.99
 
         # config = tf.ConfigProto(allow_soft_placement=False)
         # config.gpu_options.allocator_type = 'BFC'
@@ -471,5 +472,22 @@ def placeholder(shape=None, dtype=None, name=None):
     dtype = dtype or tf.float32
     return tf.placeholder(dtype=dtype, shape=shape, name=name)
 
+
+# endregion
+
+
+# region device context
+
+def gpu(i):
+    """
+    gpu device context
+    :param i:
+    :return:
+    """
+    return tf.device('/device:GPU:{}'.format(i))
+
+
+def cpu():
+    return tf.device('/device:CPU')
 
 # endregion

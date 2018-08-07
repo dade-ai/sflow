@@ -148,18 +148,23 @@ def conv3d(x, outdim, kernel, stride=1, pad=0, padding='SAME', mode='CONSTANT',
 
 
 @layer
-def bn(x, stddev=0.002, beta=0.0, gamma=1.0, epsilon=1e-5, decay=0.9, axis=-1, training=None, **kwargs):
-    init_gamma = tf.random_normal_initializer(mean=gamma, stddev=stddev)
-    init_beta = tf.constant_initializer(beta)
+def bn(x, stddev=0.002, beta=0.0, gamma=1.0, epsilon=1e-5, momentum=0.99, axis=-1, training=None, **kwargs):
+    if kwargs.pop('scale', True):
+        init_gamma = tf.random_normal_initializer(mean=gamma, stddev=stddev)
+    else:
+        init_gamma = None
+    if kwargs.pop('center', True):
+        init_beta = tf.constant_initializer(beta)
+    else:
+        init_beta = None
 
     reuse = tf.get_variable_scope().reuse
     if training is None and (reuse or kwargs.get('reuse', False)):
         training = False
     elif training is None:
         training = x.graph.is_training
-
     # reuse = reuse is None or reuse is True
-    out = tf.layers.batch_normalization(x, axis=axis, momentum=decay, epsilon=epsilon,
+    out = tf.layers.batch_normalization(x, axis=axis, momentum=momentum, epsilon=epsilon,
                                         beta_initializer=init_beta,
                                         gamma_initializer=init_gamma,
                                         moving_mean_initializer=tf.zeros_initializer(),
@@ -171,9 +176,22 @@ def bn(x, stddev=0.002, beta=0.0, gamma=1.0, epsilon=1e-5, decay=0.9, axis=-1, t
 
 
 @layer
-def bn_center(x, stddev=0.002, beta=0.0, gamma=1.0, epsilon=1e-5, decay=0.9, axis=-1, training=None, **kwargs):
+def renorm(x, axis=-1, momentum=0.99, epsilon=0.001, training=None,
+           gamma=1.0, beta=0.0, stddev=0.002,
+           renorm_momentum=0.99, renorm_clipping=None,
+           **kwargs):
+    """
+    https://arxiv.org/abs/1702.03275
+    https://www.tensorflow.org/api_docs/python/tf/layers/batch_normalization
+    :param x:
+    :param dict renorm_clipping: A dictionary that may map keys 'rmax', 'rmin', 'dmax' to scalar Tensors
+    used to clip the renorm correction. The correction (r, d) is used as corrected_value = normalized_value * r + d,
+    with r clipped to [rmin, rmax], and d to [-dmax, dmax].
+    Missing rmax, rmin, dmax are set to inf, 0, inf, respectively.
+    :return:
+    """
     init_gamma = tf.random_normal_initializer(mean=gamma, stddev=stddev)
-    # init_beta = tf.constant_initializer(beta)
+    init_beta = tf.constant_initializer(beta)
 
     reuse = tf.get_variable_scope().reuse
     if training is None and (reuse or kwargs.get('reuse', False)):
@@ -181,93 +199,27 @@ def bn_center(x, stddev=0.002, beta=0.0, gamma=1.0, epsilon=1e-5, decay=0.9, axi
     elif training is None:
         training = x.graph.is_training
 
-    # reuse = reuse is None or reuse is True
-    out = tf.layers.batch_normalization(x, axis=axis, momentum=decay, epsilon=epsilon,
-                                        center=True,
-                                        # beta_initializer=init_beta,
+    if renorm_clipping is not None:
+        if renorm_clipping.get('rmin', None) is None:
+            rmax = renorm_clipping.get('rmax', None)
+            if rmax is not None and not np.isinf(rmax):
+                rmin = 1 / rmax
+                renorm_clipping['rmin'] = rmin
+
+    out = tf.layers.batch_normalization(x, axis=axis, momentum=momentum, epsilon=epsilon,
+                                        beta_initializer=init_beta,
                                         gamma_initializer=init_gamma,
-                                        moving_mean_initializer=tf.zeros_initializer(),
-                                        moving_variance_initializer=tf.ones_initializer(),
                                         training=training,
+                                        renorm=True,
+                                        renorm_clipping=renorm_clipping,
+                                        renorm_momentum=renorm_momentum,
                                         **kwargs
                                         )
     return out
 
 
-# @layer
-def bn_old_buggy(x, stddev=0.002, beta=0.0, gamma=1.0, epsilon=1e-5, decay=0.9, **kwargs):
-    #  http://arxiv.org/abs/1502.03167
-    # contrib/layers/python/layers/layers.py
-    # a = tf.contrib.layers.batch_norm
-    # from tensorflow.contrib.layers.python.layers.layers import batch_norm
-
-    # see ioptimizer
-
-    init_gamma = tf.random_normal_initializer(mean=gamma, stddev=stddev)
-    init_beta = tf.constant_initializer(beta)
-
-    shapelast = x.dims[-1:]
-
-    # params
-    beta_v = tf.get_weight(name='beta', shape=shapelast, initializer=init_beta)
-    gamma_v = tf.get_weight(name='gamma', shape=shapelast, initializer=init_gamma)
-
-    # non trainable params
-    # collections = [tf.GraphKeys.GLOBAL_VARIABLES, tf.GraphKeys.MOVING_AVERAGE_VARIABLES]
-    collections = [tf.GraphKeys.MODEL_VARIABLES, tf.GraphKeys.MOVING_AVERAGE_VARIABLES]
-
-    moving_mean = tf.get_variable(name='moving_mean', shape=shapelast,
-                                  initializer=tf.zeros_initializer(),
-                                  trainable=False,
-                                  collections=collections)
-    moving_var = tf.get_variable(name='moving_var', shape=shapelast,
-                                 initializer=tf.ones_initializer(),
-                                 trainable=False,
-                                 collections=collections)
-
-    out = _batch_normalization(x, beta_v, gamma_v, moving_mean, moving_var, epsilon,
-                               decay=decay, **kwargs)
-
-    return out
-
-
-# buggy
-def _batch_normalization(x, beta, gamma, moving_mean, moving_var, epsilon, decay=0.999,
-                         axis=None, name=None, is_training=None):
-    from tensorflow.python.training import moving_averages
-
-    axis = range(x.ndim - 1) if axis is None else axis  # [0,1,2] for NHWC
-
-    def update_moments():
-        m, v = tf.nn.moments(x, axis)
-        update_mean = moving_averages.assign_moving_average(moving_mean, m, decay)
-        update_var = moving_averages.assign_moving_average(moving_var, v, decay)
-
-        # todo@dade : check this
-        with tf.control_dependencies([update_mean, update_var]):
-            return tf.identity(m), tf.identity(v)
-        # return update_mean, update_var
-
-    if is_training is None:
-        training = x.graph.is_training
-    else:
-        training = is_training
-
-    mean, var = tf.cond(training, update_moments, lambda: (moving_mean, moving_var))
-
-    # todo@dade : check this
-    # tf.add_to_collection(tf.GraphKeys.UPDATE_OPS, mean)
-    # tf.add_to_collection(tf.GraphKeys.UPDATE_OPS, var)
-
-    inference = tf.nn.batch_normalization(x, mean, var, beta, gamma, epsilon, name=name)
-    # inference.set_shape(x.dims)
-    inference.set_shape(x.get_shape())
-
-    return inference
-
-
 @layer
-def inorm(x, beta=0.0, gamma=1.0, epsilon=1e-5):
+def inorm(x, beta=0.0, gamma=1.0, stddev=0.002, epsilon=1e-5, axis=None, trainable=True, **kwargs):
     """
     instance normalization normalization for (W,H)
     same output not regard to trainmode
@@ -280,11 +232,22 @@ def inorm(x, beta=0.0, gamma=1.0, epsilon=1e-5):
     :param epsilon:
     :return:
     """
-    axes = range(1, 1 + x.ndim-2)  # axes = [1,2] for BWHC except batch, channel
+    axes = list(range(1, 1 + x.ndim-2))  # axes = [1,2] for BWHC except batch, channel
     m, v = tf.nn.moments(x, axes=axes, keep_dims=True)
 
+    shapelast = x.dims[-1:]
+    if trainable:
+        init_gamma = tf.random_normal_initializer(mean=gamma, stddev=stddev)
+        init_beta = tf.constant_initializer(beta)
+        gamma_t = tf.get_weight(name='gamma', shape=shapelast, initializer=init_gamma)
+        beta_t = tf.get_bias(name='beta', shape=shapelast, initializer=init_beta)
+    else:
+        gamma_t = gamma
+        beta_t = beta
+
     # out = (x - m) / tf.sqrt(v + epsilon)
-    out = tf.nn.batch_normalization(x, m, v, beta, gamma, epsilon)
+    # out = tf.nn.batch_normalization(x, m, v, beta, gamma, epsilon)
+    out = tf.nn.batch_normalization(x, m, v, offset=beta_t, scale=gamma_t, variance_epsilon=epsilon)
 
     return out
 
@@ -325,111 +288,67 @@ def cnorm(x, labels, klass=None, stddev=0.01, beta=0.0, gamma=1.0, epsilon=1e-5)
     return inorm(x, beta=beta_l, gamma=gamma_l, epsilon=epsilon)
 
 
-# @layer
-# def pn(x, beta=0.0, gamma=1.0, epsilon=1e-5):
-#     b = tf.get_weight(name='beta', shape=(), value=beta)
-#     g = tf.get_weight(name='gamma', shape=(), value=gamma)
-#
-#     return inorm(x, beta=b, gamma=g, epsilon=epsilon)
+@layer
+def lnorm(x, center=True, scale=True, activation_fn=None, reuse=None,
+          variables_collections=None, outputs_collections=None,
+          trainable=True, begin_norm_axis=1, begin_params_axis=-1,
+          scope=None,
+          **kwargs):
+    """
+    # layer normalization
+    :param x:
+    :return:
+    """
+    return tf.contrib.layers.layer_norm(x, center=center, scale=scale,
+                                        activation_fn=activation_fn, reuse=reuse,
+                                        variables_collections=variables_collections,
+                                        outputs_collections=outputs_collections,
+                                        trainable=trainable,
+                                        begin_norm_axis=begin_norm_axis,
+                                        begin_params_axis=begin_params_axis,
+                                        scope=None,
+                                        **kwargs)
 
 @layer
-def pin(x, beta=0.0, gamma=1.0, epsilon=1e-5):
+def gnorm(x, group):
+    """
+    group normalization
 
-    shape = [1] * x.ndim
-    shape[-1] = x.dims[-1]  # ones but last channel axis
+    :param x: [N, ...., C]
+    :param int group: G,
+    :return:
+    """
+    # def GroupNorm(x, gamma, beta, G, eps=1e−5):
+    #     # x: input features with shape [N,C,H,W]
+    #     # gamma, beta: scale and offset, with shape [1,C,1,1]
+    #     # G: number of groups for GN
+    #     N, C, H, W = x.shape
+    #     x = tf.reshape(x, [N, G, C // G, H, W])
+    #     mean, var = tf.nn.moments(x, [2, 3, 4], keep dims=True)
+    #     x = (x − mean) / tf.sqrt(var + eps)
+    #     x = tf.reshape(x, [N, C, H, W])
+    #     return x ∗ gamma + beta
+    shape = list(x.dims)
+    if shape[0] is None:
+        shape[0] = -1
+    ch = shape[-1]
+    shape[-1] = ch // group
+    shape.append(group)
 
-    b = tf.get_weight(name='beta', shape=shape, initializer=tf.constant_initializer(value=beta))
-    g = tf.get_weight(name='gamma', shape=shape, initializer=tf.constant_initializer(value=gamma))
+    # todo : 나누어 안떨어진다면! ch // group 안떨어진다..
+    assert (ch // group) * group == ch
 
-    return inorm(x, beta=b, gamma=g, epsilon=epsilon)
+    x = tf.reshape(x, shape)
+    x_n = lnorm(x)
 
+    # restore original shape
+    shape = shape[:-1]
+    shape[-1] = ch
+    x = tf.reshape(x_n, shape)
 
-@layer
-def pbn(x, beta=0.0, gamma=1.0, epsilon=1e-5):
-
-    shape = [1] * x.ndim
-    shape[-1] = x.dims[-1]  # ones but last channel axis
-    axes = range(x.ndim - 1)  # axes = [1,2] for BWHC except batch, channel
-
-    b = tf.get_weight(name='beta', shape=shape, initializer=tf.constant_initializer(value=beta))
-    g = tf.get_weight(name='gamma', shape=shape, initializer=tf.constant_initializer(value=gamma))
-
-    m, v = tf.nn.moments(x, axes=axes, keep_dims=True)
-
-    # out = (x - m) / tf.sqrt(v + epsilon)
-    out = tf.nn.batch_normalization(x, m, v, beta, gamma, epsilon)
-
-    return out
-
-
-@layer
-def dn(x, stddev=0.002, beta=0.0, gamma=1.0, epsilon=1e-5, decay=0.9, training=None, **kwargs):
-    init_gamma = tf.random_normal_initializer(mean=gamma, stddev=stddev)
-    init_beta = tf.constant_initializer(beta)
-
-    shapelast = x.dims[-1:]
-
-    # params
-    beta_v = tf.get_weight(name='beta', shape=shapelast, initializer=init_beta)
-    gamma_v = tf.get_weight(name='gamma', shape=shapelast, initializer=init_gamma)
-
-    # non trainable params
-    # collections = [tf.GraphKeys.GLOBAL_VARIABLES, tf.GraphKeys.MOVING_AVERAGE_VARIABLES]
-    collections = [tf.GraphKeys.MODEL_VARIABLES, tf.GraphKeys.MOVING_AVERAGE_VARIABLES]
-
-    moving_mean = tf.get_variable(name='moving_mean', shape=shapelast,
-                                  initializer=tf.zeros_initializer(),
-                                  trainable=False,
-                                  collections=collections)
-    moving_var = tf.get_variable(name='moving_var', shape=shapelast,
-                                 initializer=tf.ones_initializer(),
-                                 trainable=False,
-                                 collections=collections)
-
-    out = _data_normalization(x, beta_v, gamma_v, moving_mean, moving_var, epsilon,
-                              decay=decay, training=None, **kwargs)
-
-    return out
+    return x
 
 
-def _data_normalization(x, beta, gamma, moving_mean, moving_var, epsilon, decay=0.999,
-                        axis=None, training=None, name=None, **kwargs):
-    from tensorflow.python.training import moving_averages
-
-    # todo : test
-
-    axis = range(x.ndim - 1) if axis is None else axis  # [0,1,2] for NHWC
-
-    def update_moments():
-        m, v = tf.nn.moments(x, axis)
-        update_mean = moving_averages.assign_moving_average(moving_mean, m, decay)
-        update_var = moving_averages.assign_moving_average(moving_var, v, decay)
-
-        # todo@dade : check this
-        # with tf.control_dependencies([update_mean, update_var]):
-        #     return tf.identity(moving_mean), tf.identity(moving_var)
-
-        tf.add_to_collection(tf.GraphKeys.UPDATE_OPS, update_mean)
-        tf.add_to_collection(tf.GraphKeys.UPDATE_OPS, update_var)
-
-        return tf.identity(moving_mean), tf.identity(moving_var)
-
-    reuse = tf.get_variable_scope().reuse
-    if training is None:
-        if reuse or kwargs.get('reuse', False):
-            training = False
-        else:
-            training = x.graph.is_training
-
-    if training:
-        mean, var = update_moments()
-    else:
-        mean, var = moving_mean, moving_var
-
-    inference = tf.nn.batch_normalization(x, mean, var, beta, gamma, epsilon, name=name)
-    inference.set_shape(x.get_shape())
-
-    return inference
 
 
 # endregion

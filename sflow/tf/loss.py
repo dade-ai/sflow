@@ -252,7 +252,7 @@ def hardmax(t, axis=-1, scale=100., name=None):
 
 
 @tf.op_scope
-def cross_entropy(p, labels, name=None):
+def cross_entropy(p, labels, eps=1e-5, name=None):
     """
     target.dtype == int, if ndim(p) - 1 = ndim(target), look by index
     cross_entropy(softmax(logits), labels) == softmax_cross_entropy(logits, labels)
@@ -260,7 +260,9 @@ def cross_entropy(p, labels, name=None):
     :param labels: index for mutual exclusive target class
     :return:
     """
-    return -tf.lookup(p, labels).log(name=name)
+    x = tf.lookup(p, labels)
+    x = -tf.log(p + eps, name=name)
+    return x
 
 
 @tf.op_scope

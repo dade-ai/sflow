@@ -3,7 +3,7 @@ import sflow.core as tf
 
 
 @tf.op_scope
-def dice_coeff(pred, target, axis=(1, 2), eps=1e-8):
+def dice_coeff(pred, target, axis=None, eps=1e-8):
     """
     dice coeff, ndim == 4, nhwc format
     2*(intersect) / (pred + target)
@@ -13,15 +13,55 @@ def dice_coeff(pred, target, axis=(1, 2), eps=1e-8):
     :param eps: for prevent NaN
     :return: [batch x channel]
     """
+    assert pred.ndim == target.ndim
+    axis = axis or list(range(1, pred.ndim-1))
+
     ps = pred.sum(axis=axis)
     ts = target.sum(axis=axis)
     intersect = tf.sum(pred * target, axis=axis)
 
-    # need some set_shape?
-    # select or add some slack?
-    # return jt.select(jt.equal(ps * ts, 0.), jt.ones(shape=ts.dims), 2. * intersect / (ps + ts))
+    return (2. * intersect + eps) / (ps + ts + eps)
+
+
+@tf.op_scope
+def dice_coeff_sorensen(pred, target, axis=None, eps=1e-8):
+    """
+    Sorensen-Dice loss
+    https://arxiv.org/pdf/1606.04797.pdf
+
+    dice coeff, ndim == 4, nhwc format
+    2*(intersect) / (pred + target)
+    :param pred: assume : range(0,1), 4dim
+    :param target: 0 or 1 nhwc format 4dim
+    :param axis: reduction_axis
+    :param eps: for prevent NaN
+    :return: [batch x channel]
+    """
+    assert pred.ndim == target.ndim
+    axis = axis or list(range(1, pred.ndim-1))
+
+    ps = tf.square(pred).sum(axis=axis)
+    ts = tf.square(target).sum(axis=axis)
+    intersect = tf.sum(pred * target, axis=axis)
 
     return (2. * intersect + eps) / (ps + ts + eps)
+
+
+@tf.op_scope
+def jaccard_index(pred, target, axis=None, eps=1e-8):
+    assert pred.ndim == target.ndim
+    axis = axis or list(range(1, pred.ndim-1))
+
+    ps = pred.sum(axis=axis)
+    ts = target.sum(axis=axis)
+    intersect = tf.sum(pred * target, axis=axis)
+
+    return (intersect + eps) / (ps + ts - intersect + eps)
+
+
+@tf.op_scope
+def jaccard_loss(pred, target, axis=None, smooth=1.):
+    return 1.0 - jaccard_index(pred, target, axis=axis, eps=smooth)
 
 
 @tf.op_scope

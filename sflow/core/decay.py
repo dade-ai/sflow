@@ -5,7 +5,6 @@ from .icore import (get_global_step)
 
 
 def exponential(decay_steps, decay_rate, staircase=False, cycleper=None, lr=None, name=None):
-
     def exponential_decay(learning_rate, global_step=None):
         global_step = global_step or get_global_step()
         if cycleper is not None:
@@ -19,7 +18,6 @@ def exponential(decay_steps, decay_rate, staircase=False, cycleper=None, lr=None
 
 
 def piecewise(boundaries, lr=None, name=None):
-
     def piecewise_constant(values, global_step=None):
         global_step = global_step or get_global_step()
         return tf.train.piecewise_constant(global_step, boundaries, values, name=name)

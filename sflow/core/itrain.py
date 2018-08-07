@@ -165,18 +165,20 @@ class _SummaryWriter(object):
         self.summaryop = summaryop if summaryop is not None else tf.summary.merge_all()
         self._session = default_session()
 
-    def add_summary(self, gstep, sess=None, summary=None, other_op=None):
+    def add_summary(self, gstep, sess=None, summary=None, other_op=None, feed_dict=None, flush=False):
         if summary is None:
             sess = sess or self._session
             if other_op is not None:
-                summary = sess.run([self.summaryop] + other_op)[0]
+                summary = sess.run([self.summaryop] + other_op, feed_dict=feed_dict)[0]
             else:
-                summary = sess.run(self.summaryop)
+                summary = sess.run(self.summaryop, feed_dict=feed_dict)
 
         if isinstance(summary, (tuple, list)):
             [self._writer.add_summary(s, global_step=gstep) for s in summary]
         else:
             self._writer.add_summary(summary, global_step=gstep)
+        if flush:
+            self._writer.flush()
 
 
 def summary_writer(logdir=None, summaryop=None, **kwargs):
