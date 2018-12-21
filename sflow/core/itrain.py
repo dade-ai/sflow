@@ -351,6 +351,7 @@ def trainstep(ep=None, maxep=None, epochper=1, saveper=1, savers=None, ep_restor
     # try:
     with feeding() as (sess, coord):
         gstep_start = global_step.eval()
+        gstep = gstep_start
 
         ep = ep_restore  # gstep // epochper
         ep_p = ep
@@ -358,7 +359,7 @@ def trainstep(ep=None, maxep=None, epochper=1, saveper=1, savers=None, ep_restor
             maxep = ep + (epcount or 10)
 
         while not coord.should_stop() and ep < maxep:
-            yield ep, gstep_start
+            yield ep, gstep
 
             try:
                 gstep = sess.run([igstep, global_step])[1]
